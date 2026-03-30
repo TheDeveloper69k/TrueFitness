@@ -262,7 +262,7 @@ exports.assignMembership = async (req, res) => {
     const paymentPayload = {
       user_id: resolvedUserId,
       amount: finalAmount,
-      status: "success",              // ✅ matches your DB constraint
+      status: "success",              // ✅ matches your DB  constraint
       payment_date: new Date().toISOString(),
       plan_id: plan.id,
       gym_id: gym_id || null,
