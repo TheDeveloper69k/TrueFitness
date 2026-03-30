@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>True Fitness — Secure Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/payment.css"/>
+</head>
+<body>
+ 
+<!-- Background particles -->
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+ 
+<!-- HEADER -->
+<header class="pay-header">
+  <div class="pay-header-inner">
+    <div class="logo">
+      <div class="logo-icon">TF</div>
+      <span class="logo-text">TRUE FITNESS</span>
+    </div>
+    <div class="secure-badge">
+      <span class="lock-icon">🔒</span>
+      <span>256-bit SSL Secured</span>
+    </div>
+  </div>
+</header>
+ 
+<!-- MAIN -->
+<main class="pay-main">
+ 
+  <!-- STEP INDICATOR -->
+  <div class="steps">
+    <div class="step active" id="step1Dot"><span class="step-num">1</span><span class="step-label">Plan</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="step2Dot"><span class="step-num">2</span><span class="step-label">Details</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="step3Dot"><span class="step-num">3</span><span class="step-label">Pay</span></div>
+  </div>
+ 
+  <div class="pay-layout">
+ 
+    <!-- LEFT: FORM PANELS -->
+    <div class="pay-form-col">
+ 
+      <!-- PANEL 1: Plan Selection -->
+      <div class="pay-panel active" id="panel1">
+        <h2 class="panel-title">Choose Your Plan</h2>
+        <p class="panel-sub">Select the membership that fits your goals</p>
+ 
+        <div class="plan-cards">
+          <label class="plan-option" data-plan="basic" data-price="1500" data-period="Monthly">
+            <input type="radio" name="plan" value="basic"/>
+            <div class="plan-option-inner">
+              <div class="plan-option-top">
+                <div>
+                  <div class="plan-option-name">Basic Plan</div>
+                  <div class="plan-option-desc">Gym access + Locker</div>
+                </div>
+                <div class="plan-option-price">₹1,500<span>/mo</span></div>
+              </div>
+              <div class="plan-option-features">
+                <span>✓ Equipment Access</span>
+                <span>✓ Locker Facility</span>
+                <span>✓ App Access</span>
+              </div>
+              <div class="plan-radio-dot"></div>
+            </div>
+          </label>
+ 
+          <label class="plan-option popular-option" data-plan="premium" data-price="2999" data-period="Quarterly">
+            <input type="radio" name="plan" value="premium" checked/>
+            <div class="plan-badge-top">MOST POPULAR</div>
+            <div class="plan-option-inner">
+              <div class="plan-option-top">
+                <div>
+                  <div class="plan-option-name">Premium Plan</div>
+                  <div class="plan-option-desc">Trainer + Diet Plan</div>
+                </div>
+                <div class="plan-option-price">₹2,999<span>/qtr</span></div>
+              </div>
+              <div class="plan-option-features">
+                <span>✓ Personal Trainer 3×/week</span>
+                <span>✓ Diet Plan</span>
+                <span>✓ Group Classes</span>
+                <span>✓ Progress Tracking</span>
+              </div>
+              <div class="plan-radio-dot"></div>
+            </div>
+          </label>
+ 
+          <label class="plan-option" data-plan="vip" data-price="4999" data-period="6 Months">
+            <input type="radio" name="plan" value="vip"/>
+            <div class="plan-option-inner">
+              <div class="plan-option-top">
+                <div>
+                  <div class="plan-option-name">VIP Plan</div>
+                  <div class="plan-option-desc">Daily trainer + Spa</div>
+                </div>
+                <div class="plan-option-price">₹4,999<span>/6mo</span></div>
+              </div>
+              <div class="plan-option-features">
+                <span>✓ Daily Personal Trainer</span>
+                <span>✓ Nutrition Counseling</span>
+                <span>✓ Spa & Massage</span>
+                <span>✓ Priority Booking</span>
+              </div>
+              <div class="plan-radio-dot"></div>
+            </div>
+          </label>
+        </div>
+ 
+        <button class="pay-btn" onclick="goToStep(2)">Continue <span class="btn-arrow">→</span></button>
+      </div>
+ 
+      <!-- PANEL 2: Personal Details -->
+      <div class="pay-panel" id="panel2">
+        <h2 class="panel-title">Your Details</h2>
+        <p class="panel-sub">Confirm your membership information</p>
+ 
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="payName" placeholder="Your full name"/>
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="payPhone" placeholder="10-digit number"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="payEmail" placeholder="you@email.com"/>
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="payDob"/>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Address</label>
+          <input type="text" id="payAddress" placeholder="Your address (optional)"/>
+        </div>
+ 
+        <div id="detailsErr" class="field-err" style="display:none"></div>
+ 
+        <div class="btn-row">
+          <button class="pay-btn pay-btn-outline" onclick="goToStep(1)">← Back</button>
+          <button class="pay-btn" onclick="goToStep(3)">Continue <span class="btn-arrow">→</span></button>
+        </div>
+      </div>
+ 
+      <!-- PANEL 3: Payment Method -->
+      <div class="pay-panel" id="panel3">
+        <h2 class="panel-title">Payment</h2>
+        <p class="panel-sub">Choose how you'd like to pay</p>
+ 
+        <!-- Payment Method Tabs -->
+        <div class="pay-tabs">
+          <button class="pay-tab active" onclick="switchPayTab(this,'upi')">UPI</button>
+          <button class="pay-tab" onclick="switchPayTab(this,'card')">Card</button>
+          <button class="pay-tab" onclick="switchPayTab(this,'netbanking')">Net Banking</button>
+          <button class="pay-tab" onclick="switchPayTab(this,'cash')">Cash / Walk-in</button>
+        </div>
+ 
+        <!-- UPI -->
+        <div class="pay-tab-content active" id="tab-upi">
+          <div class="upi-logos">
+            <div class="upi-logo">GPay</div>
+            <div class="upi-logo">PhonePe</div>
+            <div class="upi-logo">Paytm</div>
+            <div class="upi-logo">BHIM</div>
+          </div>
+          <div class="form-group full">
+            <label>UPI ID</label>
+            <input type="text" id="upiId" placeholder="yourname@upi"/>
+          </div>
+          <div class="upi-note">You will receive a payment request on your UPI app</div>
+        </div>
+ 
+        <!-- Card -->
+        <div class="pay-tab-content" id="tab-card">
+          <div class="card-preview" id="cardPreview">
+            <div class="card-chip">▦</div>
+            <div class="card-number-display" id="cardNumDisplay">•••• •••• •••• ••••</div>
+            <div class="card-bottom">
+              <div>
+                <div class="card-label">Card Holder</div>
+                <div class="card-val" id="cardNameDisplay">YOUR NAME</div>
+              </div>
+              <div>
+                <div class="card-label">Expires</div>
+                <div class="card-val" id="cardExpDisplay">MM/YY</div>
+              </div>
+              <div class="card-network" id="cardNetwork">VISA</div>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Card Number</label>
+            <input type="text" id="cardNum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)" onkeyup="updateCardPreview()"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)" onkeyup="updateCardPreview()"/>
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="password" id="cardCvv" placeholder="•••" maxlength="4"/>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Name on Card</label>
+            <input type="text" id="cardName" placeholder="As printed on card" oninput="updateCardPreview()"/>
+          </div>
+        </div>
+ 
+        <!-- Net Banking -->
+        <div class="pay-tab-content" id="tab-netbanking">
+          <div class="bank-grid">
+            <label class="bank-option"><input type="radio" name="bank" value="sbi"/> <span>SBI</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="hdfc"/> <span>HDFC</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="icici"/> <span>ICICI</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="axis"/> <span>Axis</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="kotak"/> <span>Kotak</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="pnb"/> <span>PNB</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="bob"/> <span>Bank of Baroda</span></label>
+            <label class="bank-option"><input type="radio" name="bank" value="other"/> <span>Other</span></label>
+          </div>
+        </div>
+ 
+        <!-- Cash -->
+        <div class="pay-tab-content" id="tab-cash">
+          <div class="cash-info">
+            <div class="cash-icon">🏪</div>
+            <h3>Pay at the Gym</h3>
+            <p>Visit the True Fitness reception counter to complete your membership payment. Bring this confirmation reference.</p>
+            <div class="cash-address">
+              <span>📍</span>
+              <span>SCO No: 1,2,3, Sector-115, Kharar Mohali 140307</span>
+            </div>
+            <div class="cash-timings">
+              <span>🕐</span>
+              <span>Mon–Sun: 5:00 AM – 11:00 PM</span>
+            </div>
+          </div>
+        </div>
+ 
+        <div id="paymentErr" class="field-err" style="display:none"></div>
+ 
+        <div class="btn-row">
+          <button class="pay-btn pay-btn-outline" onclick="goToStep(2)">← Back</button>
+          <button class="pay-btn pay-btn-pulse" id="payNowBtn" onclick="processPayment()">
+            <span id="payBtnText">Pay Now</span>
+            <span class="pay-amount-inline" id="payBtnAmount">₹2,999</span>
+          </button>
+        </div>
+      </div>
+ 
+    </div>
+ 
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div class="pay-summary-col">
+      <div class="summary-card">
+        <div class="summary-header">
+          <h3>Order Summary</h3>
+          <div class="summary-gym">True Fitness, Mohali</div>
+        </div>
+ 
+        <div class="summary-plan-name" id="summaryPlanName">Premium Plan</div>
+        <div class="summary-plan-period" id="summaryPlanPeriod">Quarterly</div>
+ 
+        <div class="summary-divider"></div>
+ 
+        <div class="summary-line">
+          <span>Membership Fee</span>
+          <span id="summaryBase">₹2,999</span>
+        </div>
+        <div class="summary-line">
+          <span>GST (18%)</span>
+          <span id="summaryGst">₹539</span>
+        </div>
+        <div class="summary-line summary-discount" id="summaryDiscountLine" style="display:none">
+          <span>Discount</span>
+          <span id="summaryDiscount">-₹0</span>
+        </div>
+ 
+        <div class="summary-divider"></div>
+ 
+        <div class="summary-total-line">
+          <span>Total</span>
+          <span id="summaryTotal" class="summary-total-amount">₹3,539</span>
+        </div>
+ 
+        <!-- Coupon -->
+        <div class="coupon-row">
+          <input type="text" id="couponInput" placeholder="Coupon code"/>
+          <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+        </div>
+        <div id="couponMsg" style="font-size:11px;margin-top:6px;display:none"></div>
+ 
+        <div class="summary-divider"></div>
+ 
+        <div class="trust-items">
+          <div class="trust-item"><span>🔒</span> Secure payment</div>
+          <div class="trust-item"><span>📋</span> Instant confirmation</div>
+          <div class="trust-item"><span>↩️</span> 7-day refund policy</div>
+        </div>
+      </div>
+    </div>
+ 
+  </div><!-- /pay-layout -->
+</main>
+ 
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-anim">
+      <div class="success-ring"></div>
+      <div class="success-check">✓</div>
+    </div>
+    <h2>Payment Successful!</h2>
+    <p>Welcome to <strong>True Fitness</strong>! Your membership is now active.</p>
+    <div class="success-ref" id="successRef">REF: TF-000000</div>
+    <div class="success-details" id="successDetails"></div>
+    <button class="pay-btn" style="margin-top:28px;width:100%" onclick="window.location.href='index.html'">Go to Dashboard →</button>
+  </div>
+</div>
+ 
+<script src="../js/payment.js"></script>
+</body>
+</html>
+ 

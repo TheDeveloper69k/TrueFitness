@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GymPro – Admin Membership</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #0d0d0d;
+    --bg2:       #111111;
+    --bg-card:   #141414;
+    --bg-hover:  #1a1a1a;
+    --red:       #d92020;
+    --red-light: #e83030;
+    --red-dim:   rgba(217,32,32,0.12);
+    --red-border:rgba(217,32,32,0.25);
+    --border:    #1e1e1e;
+    --border2:   #262626;
+    --text:      #f2f2f2;
+    --muted:     #666;
+    --muted2:    #999;
+    --sidebar:   220px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+ 
+  /* ── SIDEBAR ── */
+  .sidebar{
+    width:var(--sidebar);position:fixed;top:0;left:0;height:100vh;
+    background:var(--bg2);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;z-index:200;
+  }
+  .sb-brand{
+    display:flex;align-items:center;gap:11px;
+    padding:20px 18px;border-bottom:1px solid var(--border);
+  }
+  .sb-icon{
+    width:36px;height:36px;background:var(--red);border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Bebas Neue';font-size:17px;letter-spacing:1px;color:#fff;
+    box-shadow:0 0 14px rgba(217,32,32,0.3);flex-shrink:0;
+  }
+  .sb-brand-text h2{font-family:'Bebas Neue';font-size:19px;letter-spacing:2px;color:#fff;line-height:1.1;}
+  .sb-brand-text span{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+ 
+  .sb-nav{flex:1;padding:12px 0;overflow-y:auto;}
+  .sb-nav a{
+    display:flex;align-items:center;gap:11px;padding:10px 18px;
+    color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;
+    letter-spacing:0.3px;transition:all .15s;border-left:3px solid transparent;
+  }
+  .sb-nav a:hover{color:#ddd;background:rgba(255,255,255,0.03);}
+  .sb-nav a.active{color:#fff;background:rgba(217,32,32,0.08);border-left-color:var(--red);}
+  .sb-nav a svg{width:16px;height:16px;flex-shrink:0;}
+ 
+  .sb-footer{padding:14px 18px;border-top:1px solid var(--border);}
+  .sb-user{display:flex;align-items:center;gap:10px;}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:14px;color:#fff;flex-shrink:0;}
+  .sb-user-info h4{font-size:13px;font-weight:600;line-height:1.2;}
+  .sb-user-info span{font-size:11px;color:var(--muted);}
+ 
+  /* ── TOPBAR ── */
+  .topbar{
+    position:fixed;top:0;left:var(--sidebar);right:0;height:62px;
+    background:rgba(13,13,13,.95);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);display:flex;align-items:center;
+    padding:0 28px;gap:12px;z-index:100;
+  }
+  .search{
+    flex:1;max-width:360px;display:flex;align-items:center;gap:9px;
+    background:#141414;border:1px solid var(--border2);border-radius:8px;
+    padding:8px 13px;
+  }
+  .search input{background:none;border:none;outline:none;color:var(--text);font-family:'Rajdhani';font-size:13px;width:100%;}
+  .search input::placeholder{color:var(--muted);}
+  .search svg{color:var(--muted);flex-shrink:0;}
+ 
+  .top-actions{display:flex;align-items:center;gap:9px;margin-left:auto;}
+  .top-btn{
+    display:flex;align-items:center;gap:7px;padding:7px 14px;
+    border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.5px;
+    cursor:pointer;border:none;font-family:'Rajdhani';transition:all .2s;
+  }
+  .top-btn.secure{background:#141414;border:1px solid var(--border2);color:var(--muted2);}
+  .top-btn.granted{background:rgba(217,32,32,.1);border:1px solid var(--red-border);color:var(--red);}
+  .icon-btn{
+    width:36px;height:36px;border-radius:7px;background:#141414;border:1px solid var(--border2);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    color:var(--muted);position:relative;transition:all .2s;
+  }
+  .icon-btn:hover{border-color:var(--border2);color:#ddd;}
+  .notif-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--red);border-radius:50%;border:1.5px solid var(--bg);}
+  .top-user{
+    display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;
+    border:1px solid var(--border2);border-radius:8px;background:#111;cursor:pointer;
+  }
+  .top-user span{font-size:13px;font-weight:600;}
+  .top-user small{font-size:11px;color:var(--muted);display:block;line-height:1;}
+ 
+  /* ── MAIN ── */
+  .main{margin-left:var(--sidebar);margin-top:62px;padding:32px 30px;flex:1;}
+ 
+  /* Page header */
+  .pg-head{margin-bottom:30px;}
+  .pg-head h1{font-family:'Bebas Neue';font-size:40px;letter-spacing:3px;color:#fff;line-height:1;}
+  .pg-head p{color:var(--muted);font-size:14px;margin-top:5px;font-weight:400;}
+ 
+  /* ── PLAN CARDS ── */
+  .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:36px;}
+ 
+  .plan-card{
+    background:var(--bg-card);border:1px solid var(--border2);
+    border-radius:13px;padding:26px;position:relative;overflow:hidden;
+    transition:border-color .2s, transform .2s;
+  }
+  .plan-card:hover{border-color:#333;transform:translateY(-2px);}
+  .plan-card.featured{
+    background:linear-gradient(150deg,#1a0707 0%,#100202 100%);
+    border-color:rgba(217,32,32,.3);
+  }
+  .plan-card.featured::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:var(--red);
+  }
+ 
+  .plan-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+  .plan-name-wrap h3{font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;margin-bottom:3px;}
+  .plan-name-wrap span{font-size:12px;color:var(--muted);letter-spacing:.5px;}
+ 
+  .plan-badge-tag{
+    font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    padding:4px 9px;border-radius:5px;
+  }
+  .plan-badge-tag.popular{background:var(--red);color:#fff;box-shadow:0 0 10px rgba(217,32,32,.3);}
+  .plan-badge-tag.basic{background:#1e1e1e;color:var(--muted2);border:1px solid var(--border2);}
+  .plan-badge-tag.vip{background:rgba(217,32,32,.1);color:var(--red);border:1px solid var(--red-border);}
+ 
+  .plan-price-row{display:flex;align-items:baseline;gap:2px;margin-bottom:20px;}
+  .plan-price-row .sym{font-size:20px;font-weight:700;color:#fff;}
+  .plan-price-row .amt{font-family:'Bebas Neue';font-size:48px;letter-spacing:1px;color:#fff;line-height:1;}
+  .plan-price-row .per{font-size:13px;color:var(--muted);margin-left:3px;}
+ 
+  .features-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;}
+  .features-list li{display:flex;align-items:center;gap:9px;font-size:13px;color:#bbb;font-weight:500;}
+  .feat-check{
+    width:17px;height:17px;border-radius:50%;flex-shrink:0;
+    background:var(--red-dim);border:1px solid var(--red-border);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .feat-check svg{width:9px;height:9px;color:var(--red);}
+ 
+  /* action row inside card */
+  .card-actions{display:flex;gap:8px;}
+  .btn-manage{
+    flex:1;padding:11px;border-radius:8px;font-family:'Rajdhani';
+    font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+    cursor:pointer;transition:all .2s;border:none;
+  }
+  .btn-manage.outline{background:transparent;color:#ccc;border:1px solid var(--border2);}
+  .btn-manage.outline:hover{border-color:#444;color:#fff;background:rgba(255,255,255,.03);}
+  .btn-manage.solid{background:var(--red);color:#fff;box-shadow:0 0 16px rgba(217,32,32,.25);}
+  .btn-manage.solid:hover{background:var(--red-light);transform:translateY(-1px);box-shadow:0 6px 22px rgba(217,32,32,.35);}
+ 
+  .btn-icon{
+    width:42px;border-radius:8px;border:1px solid var(--border2);background:transparent;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    color:var(--muted);transition:all .2s;
+  }
+  .btn-icon:hover{border-color:#555;color:#fff;}
+  .btn-icon svg{width:15px;height:15px;}
+ 
+  /* ── STATS ROW ── */
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;}
+  .stat-box{
+    background:var(--bg-card);border:1px solid var(--border2);border-radius:12px;
+    padding:20px 22px;display:flex;align-items:center;justify-content:space-between;
+  }
+  .stat-box-left h4{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+  .stat-box-left .num{font-family:'Bebas Neue';font-size:36px;letter-spacing:1px;color:#fff;line-height:1;}
+  .stat-box-left .sub{font-size:12px;color:var(--muted);margin-top:3px;}
+  .stat-box-left .sub b{color:var(--red);}
+  .stat-icon-box{
+    width:42px;height:42px;border-radius:9px;
+    background:var(--red-dim);border:1px solid var(--red-border);
+    display:flex;align-items:center;justify-content:center;color:var(--red);
+  }
+  .stat-icon-box svg{width:18px;height:18px;}
+ 
+  /* ── MEMBERS TABLE ── */
+  .section-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+  }
+  .section-head h2{font-size:15px;font-weight:700;letter-spacing:.5px;}
+  .section-head .sec-actions{display:flex;gap:8px;}
+ 
+  .filter-btn{
+    padding:7px 13px;border-radius:7px;font-family:'Rajdhani';
+    font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border2);
+    background:#141414;color:var(--muted2);transition:all .2s;
+  }
+  .filter-btn:hover,.filter-btn.active{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+ 
+  .add-btn{
+    padding:7px 14px;border-radius:7px;font-family:'Rajdhani';
+    font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;
+    background:var(--red);color:#fff;display:flex;align-items:center;gap:6px;
+    box-shadow:0 0 12px rgba(217,32,32,.2);transition:all .2s;
+  }
+  .add-btn:hover{background:var(--red-light);}
+ 
+  .table-wrap{background:var(--bg-card);border:1px solid var(--border2);border-radius:13px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;font-size:11px;font-weight:600;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--muted);padding:13px 18px;
+    border-bottom:1px solid var(--border2);background:#111;
+  }
+  tbody td{
+    padding:13px 18px;font-size:13px;font-weight:500;color:#bbb;
+    border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover td{background:rgba(255,255,255,.02);}
+ 
+  .member-cell{display:flex;align-items:center;gap:10px;}
+  .mem-av{
+    width:30px;height:30px;border-radius:50%;flex-shrink:0;font-family:'Bebas Neue';
+    font-size:13px;display:flex;align-items:center;justify-content:center;color:#fff;
+  }
+  .mem-av.r{background:#c01818;}
+  .mem-av.g{background:#166534;}
+  .mem-av.b{background:#1d4ed8;}
+  .mem-av.o{background:#92400e;}
+  .mem-name{font-size:13px;font-weight:600;color:#e0e0e0;line-height:1.2;}
+  .mem-email{font-size:11px;color:var(--muted);}
+ 
+  .plan-tag{
+    display:inline-flex;align-items:center;
+    font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    padding:3px 9px;border-radius:4px;
+  }
+  .plan-tag.basic{background:#1e1e1e;color:var(--muted2);border:1px solid var(--border2);}
+  .plan-tag.premium{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+  .plan-tag.vip{background:rgba(217,32,32,.18);color:#ff6060;border:1px solid rgba(217,32,32,.35);}
+ 
+  .status-tag{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:600;padding:3px 9px;border-radius:4px;
+  }
+  .status-tag .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+  .status-tag.active{color:#4ade80;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);}
+  .status-tag.expiring{color:#facc15;background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.2);}
+  .status-tag.expired{color:#666;background:#151515;border:1px solid var(--border2);}
+ 
+  .row-actions{display:flex;gap:6px;}
+  .row-btn{
+    padding:5px 11px;border-radius:6px;font-family:'Rajdhani';
+    font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s;border:none;
+  }
+  .row-btn.change{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+  .row-btn.change:hover{background:rgba(217,32,32,.2);}
+  .row-btn.renew{background:#1e1e1e;color:var(--muted2);border:1px solid var(--border2);}
+  .row-btn.renew:hover{color:#fff;border-color:#444;}
+  .row-btn.del{background:#1a1010;color:#883030;border:1px solid #2a1010;}
+  .row-btn.del:hover{color:#cc4444;border-color:#553030;}
+ 
+  /* ── MODAL ── */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);
+    z-index:1000;display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal{
+    background:#141414;border:1px solid var(--border2);border-radius:16px;
+    width:480px;max-width:95vw;padding:28px;
+    transform:translateY(20px);transition:transform .25s;
+  }
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .modal-head h3{font-size:18px;font-weight:700;letter-spacing:.5px;}
+  .modal-close{
+    width:30px;height:30px;border-radius:7px;border:1px solid var(--border2);
+    background:transparent;color:var(--muted);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;
+  }
+  .modal-close:hover{color:#fff;border-color:#444;}
+ 
+  .modal-member-info{
+    display:flex;align-items:center;gap:12px;
+    background:#111;border:1px solid var(--border2);border-radius:10px;
+    padding:14px 16px;margin-bottom:22px;
+  }
+  .modal-member-info .mem-name{font-size:14px;}
+ 
+  .modal-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+ 
+  .plan-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+  .plan-option{
+    border:2px solid var(--border2);border-radius:10px;padding:14px 12px;
+    text-align:center;cursor:pointer;transition:all .2s;background:transparent;
+    font-family:'Rajdhani';
+  }
+  .plan-option:hover{border-color:#444;}
+  .plan-option.selected{border-color:var(--red);background:var(--red-dim);}
+  .plan-option .po-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
+  .plan-option .po-price{font-family:'Bebas Neue';font-size:22px;color:#fff;line-height:1;}
+  .plan-option .po-per{font-size:11px;color:var(--muted);}
+ 
+  .modal-note{
+    background:#111;border:1px solid var(--border2);border-radius:8px;
+    padding:12px 14px;font-size:12px;color:var(--muted);margin-bottom:22px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .modal-note svg{color:var(--red);flex-shrink:0;}
+ 
+  .modal-footer{display:flex;gap:10px;}
+  .modal-cancel{
+    flex:1;padding:12px;border-radius:9px;border:1px solid var(--border2);
+    background:transparent;color:var(--muted2);font-family:'Rajdhani';
+    font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
+  }
+  .modal-cancel:hover{color:#fff;border-color:#444;}
+  .modal-confirm{
+    flex:2;padding:12px;border-radius:9px;border:none;
+    background:var(--red);color:#fff;font-family:'Rajdhani';
+    font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;
+    transition:all .2s;box-shadow:0 0 18px rgba(217,32,32,.25);
+  }
+  .modal-confirm:hover{background:var(--red-light);transform:translateY(-1px);}
+ 
+  /* ADD PLAN MODAL specifics */
+  .form-group{margin-bottom:16px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+  .form-group input,.form-group textarea{
+    width:100%;background:#111;border:1px solid var(--border2);border-radius:8px;
+    padding:10px 13px;color:var(--text);font-family:'Rajdhani';font-size:14px;
+    outline:none;transition:border .2s;
+  }
+  .form-group input:focus,.form-group textarea:focus{border-color:var(--red);}
+  .form-group textarea{resize:vertical;min-height:70px;}
+  .feat-input-row{display:flex;gap:8px;margin-bottom:8px;}
+  .feat-input-row input{flex:1;}
+  .feat-remove{
+    width:36px;border-radius:7px;border:1px solid var(--border2);background:transparent;
+    color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;
+  }
+  .feat-remove:hover{color:#cc4444;border-color:#553030;}
+  .feat-add{
+    width:100%;padding:8px;border-radius:7px;border:1px dashed var(--border2);
+    background:transparent;color:var(--muted);font-family:'Rajdhani';font-size:13px;
+    cursor:pointer;transition:all .2s;
+  }
+  .feat-add:hover{border-color:#444;color:#ddd;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+ 
+  /* ── Toast ── */
+  .toast{
+    position:fixed;bottom:28px;right:28px;
+    background:#1a1a1a;border:1px solid var(--border2);border-radius:10px;
+    padding:13px 18px;display:flex;align-items:center;gap:10px;
+    font-size:13px;font-weight:600;z-index:2000;
+    transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;
+  }
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast .t-icon{color:var(--red);}
+ 
+  /* Animations */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .a1{animation:fadeUp .4s ease both;}
+  .a2{animation:fadeUp .4s .07s ease both;}
+  .a3{animation:fadeUp .4s .14s ease both;}
+  .a4{animation:fadeUp .4s .21s ease both;}
+ 
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-thumb{background:#222;border-radius:4px;}
+</style>
+</head>
+<body>
+ 
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-icon">GP</div>
+    <div class="sb-brand-text">
+      <h2>GymPro</h2>
+      <span>Admin Panel</span>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Members
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>Trainers
+    </a>
+    <a href="#" class="active">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Membership
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payments
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Diet Plans
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Receipts
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports
+    </a>
+    <a href="#">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>Settings
+    </a>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="avatar">AD</div>
+      <div class="sb-user-info"><h4>Admin</h4><span>Administrator</span></div>
+    </div>
+  </div>
+</aside>
+ 
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="search">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search members, trainers, payments..."/>
+  </div>
+  <div class="top-actions">
+    <button class="top-btn secure">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Secure Admin Session
+    </button>
+    <button class="top-btn granted">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+      Admin Access Granted
+    </button>
+    <div class="icon-btn">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-dot"></span>
+    </div>
+    <div class="top-user">
+      <div class="avatar">AD</div>
+      <div><span>Admin</span><small>Administrator</small></div>
+    </div>
+  </div>
+</header>
+ 
+<!-- MAIN -->
+<main class="main">
+ 
+  <!-- Page heading -->
+  <div class="pg-head a1">
+    <h1>Membership Plans</h1>
+    <p>Manage your gym's membership plans and member subscriptions</p>
+  </div>
+ 
+  <!-- PLAN CARDS -->
+  <div class="plans-grid a2">
+ 
+    <!-- Basic -->
+    <div class="plan-card">
+      <div class="plan-top">
+        <div class="plan-name-wrap">
+          <h3>Basic Plan</h3>
+          <span>3 features included</span>
+        </div>
+        <span class="plan-badge-tag basic">Basic</span>
+      </div>
+      <div class="plan-price-row">
+        <span class="sym">₹</span><span class="amt">1,999</span><span class="per">/month</span>
+      </div>
+      <ul class="features-list">
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Access to gym equipment</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Locker facility</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Basic fitness assessment</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-manage outline" onclick="openManage('Basic Plan','basic')">Manage Plan</button>
+        <button class="btn-icon" onclick="openEdit('Basic Plan',1999,['Access to gym equipment','Locker facility','Basic fitness assessment'])" title="Edit">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+    </div>
+ 
+    <!-- Premium -->
+    <div class="plan-card featured">
+      <div class="plan-top">
+        <div class="plan-name-wrap">
+          <h3>Premium Plan</h3>
+          <span>4 features included</span>
+        </div>
+        <span class="plan-badge-tag popular">Popular</span>
+      </div>
+      <div class="plan-price-row">
+        <span class="sym">₹</span><span class="amt">2,999</span><span class="per">/month</span>
+      </div>
+      <ul class="features-list">
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>All Basic features</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Personal trainer (3 sessions/week)</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Diet plan included</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Group classes</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-manage solid" onclick="openManage('Premium Plan','premium')">Manage Plan</button>
+        <button class="btn-icon" onclick="openEdit('Premium Plan',2999,['All Basic features','Personal trainer (3 sessions/week)','Diet plan included','Group classes'])" title="Edit">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+    </div>
+ 
+    <!-- VIP -->
+    <div class="plan-card">
+      <div class="plan-top">
+        <div class="plan-name-wrap">
+          <h3>VIP Plan</h3>
+          <span>4 features included</span>
+        </div>
+        <span class="plan-badge-tag vip">VIP</span>
+      </div>
+      <div class="plan-price-row">
+        <span class="sym">₹</span><span class="amt">4,999</span><span class="per">/month</span>
+      </div>
+      <ul class="features-list">
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>All Premium features</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Personal trainer (daily)</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Nutrition counseling</li>
+        <li><span class="feat-check"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></span>Spa &amp; massage access</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-manage outline" onclick="openManage('VIP Plan','vip')">Manage Plan</button>
+        <button class="btn-icon" onclick="openEdit('VIP Plan',4999,['All Premium features','Personal trainer (daily)','Nutrition counseling','Spa & massage access'])" title="Edit">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+    </div>
+ 
+  </div>
+ 
+  <!-- MEMBERSHIP STATS -->
+  <div class="stats-row a3">
+    <div class="stat-box">
+      <div class="stat-box-left">
+        <h4>Basic Members</h4>
+        <div class="num">420</div>
+        <div class="sub"><b>35%</b> of total members</div>
+      </div>
+      <div class="stat-icon-box">
+        <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-left">
+        <h4>Premium Members</h4>
+        <div class="num">580</div>
+        <div class="sub"><b>48%</b> of total members</div>
+      </div>
+      <div class="stat-icon-box">
+        <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-left">
+        <h4>VIP Members</h4>
+        <div class="num">200</div>
+        <div class="sub"><b>17%</b> of total members</div>
+      </div>
+      <div class="stat-icon-box">
+        <svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- MEMBERS TABLE -->
+  <div class="a4">
+    <div class="section-head">
+      <h2>Member Subscriptions</h2>
+      <div class="sec-actions">
+        <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+        <button class="filter-btn" onclick="filterTable('basic',this)">Basic</button>
+        <button class="filter-btn" onclick="filterTable('premium',this)">Premium</button>
+        <button class="filter-btn" onclick="filterTable('vip',this)">VIP</button>
+        <button class="add-btn" onclick="openAdd()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Member Plan
+        </button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Plan</th>
+            <th>Start Date</th>
+            <th>Expiry</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="membersTable">
+          <tr data-plan="premium">
+            <td><div class="member-cell"><div class="mem-av r">RK</div><div><div class="mem-name">Rahul Kumar</div><div class="mem-email">rahul@email.com</div></div></div></td>
+            <td><span class="plan-tag premium">Premium</span></td>
+            <td>Mar 01, 2026</td><td>Mar 31, 2026</td><td>₹2,999</td>
+            <td><span class="status-tag active"><span class="dot"></span>Active</span></td>
+            <td><div class="row-actions">
+              <button class="row-btn change" onclick="openChangePlan('Rahul Kumar','premium')">Change Plan</button>
+              <button class="row-btn renew" onclick="showToast('Plan renewed for Rahul Kumar')">Renew</button>
+              <button class="row-btn del" onclick="showToast('Member removed')">Remove</button>
+            </div></td>
+          </tr>
+          <tr data-plan="vip">
+            <td><div class="member-cell"><div class="mem-av g">AP</div><div><div class="mem-name">Ananya Patel</div><div class="mem-email">ananya@email.com</div></div></div></td>
+            <td><span class="plan-tag vip">VIP</span></td>
+            <td>Feb 15, 2026</td><td>Mar 15, 2026</td><td>₹4,999</td>
+            <td><span class="status-tag expiring"><span class="dot"></span>Expiring Soon</span></td>
+            <td><div class="row-actions">
+              <button class="row-btn change" onclick="openChangePlan('Ananya Patel','vip')">Change Plan</button>
+              <button class="row-btn renew" onclick="showToast('Plan renewed for Ananya Patel')">Renew</button>
+              <button class="row-btn del" onclick="showToast('Member removed')">Remove</button>
+            </div></td>
+          </tr>
+          <tr data-plan="basic">
+            <td><div class="member-cell"><div class="mem-av b">VS</div><div><div class="mem-name">Vikram Singh</div><div class="mem-email">vikram@email.com</div></div></div></td>
+            <td><span class="plan-tag basic">Basic</span></td>
+            <td>Jan 10, 2026</td><td>Feb 10, 2026</td><td>₹1,999</td>
+            <td><span class="status-tag expired"><span class="dot"></span>Expired</span></td>
+            <td><div class="row-actions">
+              <button class="row-btn change" onclick="openChangePlan('Vikram Singh','basic')">Change Plan</button>
+              <button class="row-btn renew" onclick="showToast('Plan renewed for Vikram Singh')">Renew</button>
+              <button class="row-btn del" onclick="showToast('Member removed')">Remove</button>
+            </div></td>
+          </tr>
+          <tr data-plan="premium">
+            <td><div class="member-cell"><div class="mem-av o">PM</div><div><div class="mem-name">Priya Mehra</div><div class="mem-email">priya@email.com</div></div></div></td>
+            <td><span class="plan-tag premium">Premium</span></td>
+            <td>Mar 10, 2026</td><td>Apr 10, 2026</td><td>₹2,999</td>
+            <td><span class="status-tag active"><span class="dot"></span>Active</span></td>
+            <td><div class="row-actions">
+              <button class="row-btn change" onclick="openChangePlan('Priya Mehra','premium')">Change Plan</button>
+              <button class="row-btn renew" onclick="showToast('Plan renewed for Priya Mehra')">Renew</button>
+              <button class="row-btn del" onclick="showToast('Member removed')">Remove</button>
+            </div></td>
+          </tr>
+          <tr data-plan="vip">
+            <td><div class="member-cell"><div class="mem-av r">AK</div><div><div class="mem-name">Arjun Kapoor</div><div class="mem-email">arjun@email.com</div></div></div></td>
+            <td><span class="plan-tag vip">VIP</span></td>
+            <td>Mar 20, 2026</td><td>Apr 20, 2026</td><td>₹4,999</td>
+            <td><span class="status-tag active"><span class="dot"></span>Active</span></td>
+            <td><div class="row-actions">
+              <button class="row-btn change" onclick="openChangePlan('Arjun Kapoor','vip')">Change Plan</button>
+              <button class="row-btn renew" onclick="showToast('Plan renewed for Arjun Kapoor')">Renew</button>
+              <button class="row-btn del" onclick="showToast('Member removed')">Remove</button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+ 
+<!-- MODAL: Change Member Plan -->
+<div class="modal-overlay" id="changePlanModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Change Member Plan</h3>
+      <button class="modal-close" onclick="closeModal('changePlanModal')">✕</button>
+    </div>
+    <div class="modal-member-info">
+      <div class="mem-av r" id="modalAvatar">RK</div>
+      <div><div class="mem-name" id="modalMemberName">Rahul Kumar</div><div class="mem-email">Current Plan: <span id="modalCurrentPlan">Premium</span></div></div>
+    </div>
+    <div class="modal-label">Select New Plan</div>
+    <div class="plan-options">
+      <div class="plan-option" onclick="selectPlan(this,'basic')" data-plan="basic">
+        <div class="po-name">Basic</div>
+        <div class="po-price">₹1,999</div>
+        <div class="po-per">/month</div>
+      </div>
+      <div class="plan-option" onclick="selectPlan(this,'premium')" data-plan="premium">
+        <div class="po-name">Premium</div>
+        <div class="po-price">₹2,999</div>
+        <div class="po-per">/month</div>
+      </div>
+      <div class="plan-option" onclick="selectPlan(this,'vip')" data-plan="vip">
+        <div class="po-name">VIP</div>
+        <div class="po-price">₹4,999</div>
+        <div class="po-per">/month</div>
+      </div>
+    </div>
+    <div class="modal-note">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Plan change takes effect immediately. Member will be notified via WhatsApp.
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeModal('changePlanModal')">Cancel</button>
+      <button class="modal-confirm" onclick="confirmChange()">Confirm Change</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- MODAL: Manage Plan (view subscribers) -->
+<div class="modal-overlay" id="managePlanModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="managePlanTitle">Manage Plan</h3>
+      <button class="modal-close" onclick="closeModal('managePlanModal')">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:#111;border:1px solid var(--border2);border-radius:9px;padding:14px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Active</div>
+        <div style="font-family:'Bebas Neue';font-size:30px;color:#fff;" id="mp-active">—</div>
+      </div>
+      <div style="background:#111;border:1px solid var(--border2);border-radius:9px;padding:14px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Revenue</div>
+        <div style="font-family:'Bebas Neue';font-size:30px;color:#fff;" id="mp-revenue">—</div>
+      </div>
+      <div style="background:#111;border:1px solid var(--border2);border-radius:9px;padding:14px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Expiring</div>
+        <div style="font-family:'Bebas Neue';font-size:30px;color:var(--red);" id="mp-expiring">—</div>
+      </div>
+    </div>
+    <div class="modal-label">Quick Actions</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+      <button style="width:100%;padding:11px;border-radius:8px;border:1px solid var(--border2);background:#111;color:#ccc;font-family:'Rajdhani';font-size:13px;font-weight:600;cursor:pointer;text-align:left;padding-left:14px;" onclick="showToast('Sending renewal reminders...')">
+        📨 Send Renewal Reminders to Expiring Members
+      </button>
+      <button style="width:100%;padding:11px;border-radius:8px;border:1px solid var(--border2);background:#111;color:#ccc;font-family:'Rajdhani';font-size:13px;font-weight:600;cursor:pointer;text-align:left;padding-left:14px;" onclick="showToast('Exporting member list...')">
+        📥 Export Member List (CSV)
+      </button>
+      <button style="width:100%;padding:11px;border-radius:8px;border:1px solid rgba(217,32,32,.2);background:rgba(217,32,32,.05);color:var(--red);font-family:'Rajdhani';font-size:13px;font-weight:600;cursor:pointer;text-align:left;padding-left:14px;" onclick="showToast('Plan deactivated')">
+        🚫 Deactivate This Plan
+      </button>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeModal('managePlanModal')">Close</button>
+      <button class="modal-confirm" onclick="closeModal('managePlanModal');openEditFromManage()">Edit Plan Details</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- MODAL: Edit Plan -->
+<div class="modal-overlay" id="editPlanModal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-head">
+      <h3>Edit Plan</h3>
+      <button class="modal-close" onclick="closeModal('editPlanModal')">✕</button>
+    </div>
+    <div class="form-row" style="margin-bottom:16px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Plan Name</label>
+        <input type="text" id="editName" value="Premium Plan"/>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Price (₹/month)</label>
+        <input type="number" id="editPrice" value="2999"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Features</label>
+      <div id="editFeatures"></div>
+      <button class="feat-add" onclick="addFeatureField()">+ Add Feature</button>
+    </div>
+    <div class="form-group">
+      <label>Internal Notes</label>
+      <textarea placeholder="Add notes for this plan..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeModal('editPlanModal')">Cancel</button>
+      <button class="modal-confirm" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg class="t-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+  <span id="toastMsg">Done!</span>
+</div>
+ 
+<script>
+  // ── Modal helpers
+  function openModal(id){ document.getElementById(id).classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+ 
+  // ── Change Plan
+  let currentMemberName = '';
+  function openChangePlan(name, currentPlan){
+    currentMemberName = name;
+    document.getElementById('modalMemberName').textContent = name;
+    document.getElementById('modalAvatar').textContent = name.split(' ').map(n=>n[0]).join('');
+    document.getElementById('modalCurrentPlan').textContent = currentPlan.charAt(0).toUpperCase()+currentPlan.slice(1);
+    document.querySelectorAll('.plan-option').forEach(o=>o.classList.remove('selected'));
+    document.querySelector(`.plan-option[data-plan="${currentPlan}"]`).classList.add('selected');
+    openModal('changePlanModal');
+  }
+ 
+  function selectPlan(el, plan){
+    document.querySelectorAll('.plan-option').forEach(o=>o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+ 
+  function confirmChange(){
+    const sel = document.querySelector('.plan-option.selected');
+    if(!sel) return;
+    const planName = sel.querySelector('.po-name').textContent;
+    closeModal('changePlanModal');
+    showToast(`Plan changed to ${planName} for ${currentMemberName}`);
+  }
+ 
+  // ── Manage Plan
+  const planData = {
+    basic:   { active:420, revenue:'₹8.4L', expiring:18 },
+    premium: { active:580, revenue:'₹17.4L', expiring:24 },
+    vip:     { active:200, revenue:'₹10L', expiring:9 }
+  };
+  let currentManagePlan = '';
+  function openManage(title, plan){
+    currentManagePlan = plan;
+    document.getElementById('managePlanTitle').textContent = `Manage — ${title}`;
+    const d = planData[plan];
+    document.getElementById('mp-active').textContent = d.active;
+    document.getElementById('mp-revenue').textContent = d.revenue;
+    document.getElementById('mp-expiring').textContent = d.expiring;
+    openModal('managePlanModal');
+  }
+  function openEditFromManage(){
+    // stub — just open edit for current plan
+  }
+ 
+  // ── Edit Plan
+  let editFeatures = [];
+  function openEdit(name, price, features){
+    document.getElementById('editName').value = name;
+    document.getElementById('editPrice').value = price;
+    editFeatures = [...features];
+    renderFeatures();
+    openModal('editPlanModal');
+  }
+ 
+  function renderFeatures(){
+    const c = document.getElementById('editFeatures');
+    c.innerHTML = '';
+    editFeatures.forEach((f,i)=>{
+      const row = document.createElement('div');
+      row.className = 'feat-input-row';
+      row.innerHTML = `<input type="text" value="${f}" onchange="editFeatures[${i}]=this.value"/>
+        <button class="feat-remove" onclick="removeFeature(${i})"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+      c.appendChild(row);
+    });
+  }
+ 
+  function addFeatureField(){
+    editFeatures.push('New feature');
+    renderFeatures();
+  }
+ 
+  function removeFeature(i){
+    editFeatures.splice(i,1);
+    renderFeatures();
+  }
+ 
+  function saveEdit(){
+    closeModal('editPlanModal');
+    showToast('Plan details saved successfully');
+  }
+ 
+  // ── Add Plan (reuse edit modal)
+  function openAdd(){
+    document.getElementById('editName').value = '';
+    document.getElementById('editPrice').value = '';
+    editFeatures = [''];
+    renderFeatures();
+    openModal('editPlanModal');
+    document.querySelector('#editPlanModal .modal-head h3').textContent = 'Add New Plan';
+  }
+ 
+  // ── Table filter
+  function filterTable(plan, btn){
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#membersTable tr').forEach(row=>{
+      row.style.display = (plan==='all' || row.dataset.plan===plan) ? '' : 'none';
+    });
+  }
+ 
+  // ── Toast
+  let toastTimer;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+  }
+ 
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(o=>{
+    o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+  });
+</script>
+</body>
+</html>
+ 

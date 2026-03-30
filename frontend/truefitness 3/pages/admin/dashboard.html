@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrueFitness Admin Panel</title>
+  <link rel="stylesheet" href="../../css/receipt.css" />
+
+  <style>
+    /* ══════════════════════════════════════════
+   NOTIFICATIONS DESIGN
+══════════════════════════════════════════ */
+
+    .notif-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .notif-quick-card {
+      background: linear-gradient(180deg, #141414 0%, #101010 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 140px;
+    }
+
+    .notif-quick-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(232, 40, 26, .42);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
+      background: linear-gradient(180deg, #191919 0%, #121212 100%);
+    }
+
+    .notif-quick-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .nqi-red {
+      background: rgba(232, 40, 26, .14);
+      border: 1px solid rgba(232, 40, 26, .26);
+    }
+
+    .nqi-amber {
+      background: rgba(217, 119, 6, .14);
+      border: 1px solid rgba(217, 119, 6, .26);
+    }
+
+    .nqi-blue {
+      background: rgba(37, 99, 235, .14);
+      border: 1px solid rgba(37, 99, 235, .26);
+    }
+
+    .notif-quick-card h4 {
+      font-size: 18px;
+      line-height: 1.2;
+      color: #fff;
+      margin: 0;
+    }
+
+    .notif-quick-card p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* stats pills */
+    .notif-stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .notif-stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #151515;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .notif-stat-pill strong {
+      color: #fff;
+      font-weight: 800;
+    }
+
+    /* filters */
+    .notif-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .notif-filter-btn,
+    .notif-target-btn {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #151515;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .18s ease;
+    }
+
+    .notif-filter-btn:hover,
+    .notif-target-btn:hover {
+      background: #1d1d1d;
+      color: #fff;
+      border-color: #3a3a3a;
+    }
+
+    .notif-filter-active {
+      background: rgba(232, 40, 26, .14) !important;
+      color: #fff !important;
+      border-color: rgba(232, 40, 26, .38) !important;
+      box-shadow: inset 0 0 0 1px rgba(232, 40, 26, .08);
+    }
+
+    /* table title cell */
+    .notif-title-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .notif-title-cell strong {
+      font-size: 13px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .notif-msg-preview {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+      max-width: 420px;
+    }
+
+    /* type badges */
+    .notif-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .notif-type-info {
+      background: rgba(37, 99, 235, .14);
+      color: #93c5fd;
+      border-color: rgba(37, 99, 235, .28);
+    }
+
+    .notif-type-success {
+      background: rgba(22, 163, 74, .14);
+      color: #4ade80;
+      border-color: rgba(22, 163, 74, .28);
+    }
+
+    .notif-type-warning {
+      background: rgba(217, 119, 6, .14);
+      color: #fbbf24;
+      border-color: rgba(217, 119, 6, .28);
+    }
+
+    .notif-type-error {
+      background: rgba(232, 40, 26, .14);
+      color: #f87171;
+      border-color: rgba(232, 40, 26, .28);
+    }
+
+    /* member chip */
+    .notif-member-chip {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: fit-content;
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: rgba(37, 99, 235, .08);
+      border: 1px solid rgba(37, 99, 235, .18);
+      color: #93c5fd;
+      font-size: 11px;
+    }
+
+    .notif-scheduled {
+      display: inline-flex;
+      width: fit-content;
+      font-size: 11px;
+      color: #fbbf24;
+      background: rgba(217, 119, 6, .10);
+      border: 1px solid rgba(217, 119, 6, .18);
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    /* table polish */
+    #page-notifications .table-card {
+      border-radius: 18px;
+    }
+
+    #page-notifications .tc-header h3 {
+      font-size: 20px;
+    }
+
+    #page-notifications .tc-header p {
+      font-size: 13px;
+    }
+
+    #page-notifications table th {
+      font-size: 12px;
+      color: #8f8f97;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    #page-notifications table td {
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+
+    #page-notifications tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* action buttons in notification table */
+    #page-notifications .tc-btn {
+      padding: 8px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* pagination */
+    .notif-pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .notif-pagination span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      .notif-quick-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .notif-msg-preview {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .notif-filter-row {
+        gap: 6px;
+      }
+
+      .notif-filter-btn,
+      .notif-target-btn {
+        padding: 8px 10px;
+        font-size: 11px;
+      }
+
+      .notif-quick-card {
+        min-height: auto;
+      }
+    }
+
+    :root {
+      --bg: #0b0b0b;
+      --card: #121212;
+      --card2: #181818;
+      --border: #2b2b2b;
+      --white: #ffffff;
+      --muted: #a1a1aa;
+      --red: #e8281a;
+      --red-dark: #c41d12;
+      --green: #16a34a;
+      --amber: #d97706;
+      --purple: #8b5cf6;
+      --blue: #2563eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: #0f0f0f;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: width .25s ease;
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar.collapsed {
+      width: 84px;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #111;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .logo-text strong {
+      font-size: 16px;
+    }
+
+    .logo-text span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .sidebar.collapsed .logo-text,
+    .sidebar.collapsed .nav-item span:not(.ni),
+    .sidebar.collapsed .collapse-btn span:not(.ni) {
+      display: none;
+    }
+
+    .sidebar-nav {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .nav-item,
+    .collapse-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #d4d4d8;
+      transition: .2s;
+      user-select: none;
+    }
+
+    .nav-item:hover,
+    .collapse-btn:hover {
+      background: var(--card2);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(232, 40, 26, .14);
+      border: 1px solid rgba(232, 40, 26, .35);
+      color: #fff;
+    }
+
+    .ni {
+      width: 22px;
+      text-align: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #0d0d0d;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-width: 280px;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .search-box input::placeholder {
+      color: var(--muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card2);
+    }
+
+    .admin-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(232, 40, 26, .16);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .logout-btn {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      background: var(--red);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background: var(--red-dark)
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 20px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .stat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .si-red {
+      background: rgba(232, 40, 26, .15)
+    }
+
+    .si-green {
+      background: rgba(22, 163, 74, .15)
+    }
+
+    .si-amber {
+      background: rgba(217, 119, 6, .15)
+    }
+
+    .si-blue {
+      background: rgba(37, 99, 235, .15)
+    }
+
+    .stat-num {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .stat-trend {
+      font-size: 12px;
+    }
+
+    .trend-up {
+      color: #4ade80
+    }
+
+    .trend-warn {
+      color: #fbbf24
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .action-btn {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .action-btn.primary {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .action-btn.primary:hover {
+      background: var(--red-dark);
+    }
+
+    .action-btn:hover {
+      background: #222;
+    }
+
+    /* ── Members search bar ── */
+    .members-search-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      max-width: 520px;
+    }
+
+    .members-search-row .search-box {
+      flex: 1;
+      min-width: 0;
+      max-width: unset;
+    }
+
+    .clear-search-btn {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: .2s;
+    }
+
+    .clear-search-btn:hover {
+      color: #fff;
+      background: #222;
+    }
+
+    .search-result-info {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .search-result-info strong {
+      color: #fff;
+    }
+
+    /* ── Table ── */
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .tc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .tc-header h3 {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .tc-header p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .pill-green {
+      background: rgba(22, 163, 74, .15);
+      color: #4ade80;
+      border-color: rgba(22, 163, 74, .35);
+    }
+
+    .pill-red {
+      background: rgba(232, 40, 26, .15);
+      color: #f87171;
+      border-color: rgba(232, 40, 26, .35);
+    }
+
+    .pill-amber {
+      background: rgba(217, 119, 6, .15);
+      color: #fbbf24;
+      border-color: rgba(217, 119, 6, .35);
+    }
+
+    .tc-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .tc-btn:hover {
+      background: #222;
+    }
+
+    /* highlight matched text */
+    .hl {
+      background: rgba(232, 40, 26, .28);
+      color: #fff;
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    /* ── Trainers ── */
+    .trainer-card-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .tc-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tc-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tc-footer {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .placeholder-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    /* ── Modal ── */
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal {
+      width: min(92vw, 520px);
+      background: #121212;
+      border: 1px solid #2b2b2b;
+      border-radius: 14px;
+      padding: 20px;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .modal h3 {
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #bbb;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #fff;
+      outline: none;
+    }
+
+    .modal-btns {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .modal-cancel,
+    .modal-confirm {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .modal-confirm {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 84px;
+      }
+
+      .sidebar .logo-text,
+      .sidebar .nav-item span:not(.ni),
+      .sidebar .collapse-btn span:not(.ni) {
+        display: none;
+      }
+
+      .search-box {
+        min-width: unset;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topbar-right {
+        justify-content: space-between;
+      }
+
+      .content {
+        padding: 14px;
+      }
+
+      .members-search-row {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="./././Assets/Gymlogo.png" alt="True Fitness Logo" class="logo-icon" />
+      <div class="logo-text">
+        <strong>TrueFitness</strong>
+        <span>Admin Panel</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="navigate('dashboard',this)"><span class="ni">🏠</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="navigate('members',this)"><span class="ni">👥</span><span>Members</span></div>
+      <div class="nav-item" onclick="navigate('trainers',this)"><span class="ni">🏋️</span><span>Trainers</span></div>
+      <div class="nav-item" onclick="navigate('membership',this)"><span class="ni">💎</span><span>Membership</span>
+      </div>
+      <div class="nav-item" onclick="navigate('payments',this)"><span class="ni">💳</span><span>Payments</span></div>
+      <div class="nav-item" onclick="navigate('notifications',this)"><span
+          class="ni">🔔</span><span>Notifications</span></div>
+      <div class="nav-item" onclick="navigate('diet',this)"><span class="ni">🍴</span><span>Diet Plans</span></div>
+      <div class="nav-item" onclick="navigate('receipts',this)"><span class="ni">📄</span><span>Receipts</span></div>
+      <div class="nav-item" onclick="navigate('reports',this)"><span class="ni">📊</span><span>Reports</span></div>
+      <div class="nav-item" onclick="navigate('settings',this)"><span class="ni">⚙️</span><span>Settings</span></div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="collapse-btn" onclick="toggleSidebar()"><span class="ni">☰</span><span>Collapse</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="search-box">
+        <span style="color:var(--muted);font-size:14px">🔍</span>
+        <input type="text" id="globalSearch" placeholder="Search members." oninput="handleSearch(this.value)" />
+      </div>
+
+      <div class="topbar-right">
+        <div class="admin-chip">
+          <div class="admin-avatar">AD</div>
+          <div>
+            <div style="font-size:12px;font-weight:600">Admin</div>
+            <div style="font-size:10px;color:var(--muted)">Administrator</div>
+          </div>
+        </div>
+
+        <!-- FIX: added type="button" to prevent default form submission / page refresh -->
+        <button type="button" class="logout-btn" id="logoutBtn" onclick="logout()">→ Logout</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1>Welcome Back, Admin</h1>
+          <p>Manage your gym efficiently</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Total Members</div>
+              <div class="stat-icon si-red">👥</div>
+            </div>
+            <div class="stat-num" id="totalMembers">0</div>
+            <div class="stat-trend trend-up">↗ Live from database</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Active Membership</div>
+              <div class="stat-icon si-green">✅</div>
+            </div>
+            <div class="stat-num" id="activeMembers">0</div>
+            <div class="stat-trend trend-up">↗ Live from database</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Expired Membership</div>
+              <div class="stat-icon si-amber">⏰</div>
+            </div>
+            <div class="stat-num" id="expiredMembers">0</div>
+            <div class="stat-trend trend-warn">⚠ Live from database</div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <div class="action-btn primary" onclick="openAddMemberModal()">👤+ Add User</div>
+          <div class="action-btn" onclick="openAssignTrainerModal()">👤 Assign Trainer</div>
+          <div class="action-btn" onclick="navigate('trainers', document.querySelectorAll('.nav-item')[2])">🏋️ Manage
+            Trainers</div>
+          <div class="action-btn" onclick="navigate('members', document.querySelectorAll('.nav-item')[1])">📋 View
+            Members</div>
+        </div>
+
+        <div class="table-card">
+          <div class="tc-header">
+            <div>
+              <h3>Recent Members</h3>
+              <p>Live members from your database</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" onchange="toggleAll(this,'dashMemberBody')" /></th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>DOB</th>
+                  <th>Plan</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dashMemberBody">
+                <tr>
+                  <td colspan="8" style="text-align:center;padding:20px;color:gray">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBERS -->
+      <div class="page" id="page-members">
+        <div class="page-header">
+          <h1>Members</h1>
+          <p>Manage all registered members</p>
+        </div>
+
+        <div class="action-row">
+          <div class="action-btn primary" onclick="openAddMemberModal()">👤+ Add User</div>
+          <div class="action-btn" onclick="setMemberFilter('all')">All</div>
+          <div class="action-btn" onclick="setMemberFilter('active')">Active</div>
+          <div class="action-btn" onclick="setMemberFilter('expired')">Expired</div>
+          <div class="action-btn" onclick="setMemberFilter('inactive')">Inactive</div>
+        </div>
+
+        <!-- ── SEARCH BAR (Members page only) ── -->
+        <div class="members-search-row">
+          <div class="search-box">
+            <span style="color:var(--muted);font-size:14px">🔍</span>
+            <input type="text" id="memberSearch" placeholder="Search by name or phone…"
+              oninput="debouncedMemberSearch(this.value)" autocomplete="off" />
+          </div>
+          <button type="button" class="clear-search-btn" onclick="clearMemberSearch()">✕ Clear</button>
+        </div>
+
+        <!-- search result count info -->
+        <div id="memberSearchInfo" class="search-result-info" style="display:none"></div>
+
+        <div class="table-card">
+          <div class="tc-header">
+            <div>
+              <h3>All Members</h3>
+              <p>View and manage memberships</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" onchange="toggleAll(this,'memberBody')" /></th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>DOB</th>
+                  <th>Plan</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="memberBody">
+                <tr>
+                  <td colspan="8" style="text-align:center;padding:20px;color:gray">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAINERS -->
+      <div class="page" id="page-trainers">
+        <div class="page-header">
+          <h1>Trainers</h1>
+          <p>Manage trainers and member assignments</p>
+        </div>
+
+        <div class="action-row" style="margin-bottom:16px">
+          <div class="action-btn primary" onclick="openAddTrainerModal()">🏋️+ Add Trainer</div>
+          <div class="action-btn" onclick="openAssignTrainerModal()">👤 Assign Trainer</div>
+        </div>
+
+        <div class="stat-grid" style="margin-bottom:18px">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Total Trainers</div>
+              <div class="stat-icon si-red">🏋️</div>
+            </div>
+            <div class="stat-num" id="totalTrainers">0</div>
+            <div class="stat-trend trend-up">↗ Live from database</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Active Trainers</div>
+              <div class="stat-icon si-green">✅</div>
+            </div>
+            <div class="stat-num" id="activeTrainers">0</div>
+            <div class="stat-trend trend-up">↗ Live from database</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Assigned Members</div>
+              <div class="stat-icon si-amber">👥</div>
+            </div>
+            <div class="stat-num" id="assignedMembersCount">0</div>
+            <div class="stat-trend trend-warn">⚠ Live from database</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="tc-header">
+            <div>
+              <h3>All Trainers</h3>
+              <p>View, edit, activate/deactivate, and assign members</p>
+            </div>
+          </div>
+
+          <div id="trainerGrid" class="trainer-grid"
+            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px"></div>
+        </div>
+      </div>
+
+      <!-- MEMBERSHIP -->
+      <div class="page" id="page-membership">
+        <div class="page-header">
+          <h1>Membership</h1>
+          <p>Membership management section</p>
+        </div>
+        <div class="action-row">
+          <div class="action-btn primary" onclick="openAddPlanModal()">➕ Add Plan</div>
+        </div>
+
+        <div id="adminPlansContainer" style="
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
+"></div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div class="page" id="page-payments">
+        <div class="page-header">
+          <h1>Payments</h1>
+          <p>Payments section</p>
+        </div>
+        <div class="placeholder-card">
+          Payments page placeholder.
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="page" id="page-notifications">
+        <div class="page-header">
+          <h1>Notifications</h1>
+          <p>Send app notifications and WhatsApp alerts</p>
+        </div>
+
+        <div class="notif-quick-grid">
+          <div class="notif-quick-card" onclick="openSendNotifModal()">
+            <div class="notif-quick-icon nqi-red">🔔</div>
+            <h4>Send Notification</h4>
+            <p>Create and send a new app notification. Broadcast or personal.</p>
+          </div>
+
+          <div class="notif-quick-card" onclick="openExpiryReminderModal()">
+            <div class="notif-quick-icon nqi-amber">⏰</div>
+            <h4>Expiry Reminder</h4>
+            <p>Send membership expiry reminder to a specific member.</p>
+          </div>
+
+          <div class="notif-quick-card" onclick="triggerExpiryAlertsNow()">
+            <div class="notif-quick-icon nqi-blue">📲</div>
+            <h4>Run Expiry Alert Job</h4>
+            <p>Trigger WhatsApp expiry alerts manually from admin panel.</p>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="tc-header">
+            <div>
+              <h3>Notification History</h3>
+              <p>View, filter, edit and delete sent notifications</p>
+            </div>
+          </div>
+
+          <div id="notifStats" class="notif-stats-row"></div>
+
+          <div class="notif-filter-row">
+            <button class="notif-filter-btn notif-filter-active" onclick="setNotifTypeFilter('', this)">All
+              Types</button>
+            <button class="notif-filter-btn" onclick="setNotifTypeFilter('info', this)">Info</button>
+            <button class="notif-filter-btn" onclick="setNotifTypeFilter('success', this)">Success</button>
+            <button class="notif-filter-btn" onclick="setNotifTypeFilter('warning', this)">Warning</button>
+            <button class="notif-filter-btn" onclick="setNotifTypeFilter('error', this)">Error</button>
+          </div>
+
+          <div class="notif-filter-row">
+            <button class="notif-target-btn notif-filter-active" onclick="setNotifTargetFilter('', this)">All
+              Targets</button>
+            <button class="notif-target-btn" onclick="setNotifTargetFilter('all', this)">Broadcast</button>
+            <button class="notif-target-btn" onclick="setNotifTargetFilter('user', this)">Personal</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Title</th>
+                  <th>Target</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="notifHistoryBody">
+                <tr>
+                  <td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="notifPagination"></div>
+        </div>
+      </div>
+
+      <!-- DIET -->
+      <div class="page" id="page-diet">
+        <div class="page-header">
+          <h1>Diet Plans</h1>
+          <p>Diet plans section</p>
+        </div>
+
+        <!-- ADD DIET FORM -->
+        <div class="table-card">
+          <div class="tc-header">
+            <div>
+              <h3>Add Diet Plan</h3>
+              <p>Assign diet to a user</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+            <div class="form-group">
+              <label>User</label>
+
+              <input id="dietUserSearch" placeholder="Search user by name or phone"
+                oninput="searchUserForDiet(this.value)" />
+
+              <input type="hidden" id="dietUserId" />
+
+              <div id="dietUserResult"
+                style="background:#111;border:1px solid #333;border-radius:6px;max-height:200px;overflow-y:auto;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Meal Type</label>
+              <select id="mealType">
+                <option value="">Select</option>
+                <option>Breakfast</option>
+                <option>Lunch</option>
+                <option>Dinner</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Food Name</label>
+              <input id="foodName" type="text" placeholder="e.g. Oats + Banana" />
+            </div>
+
+            <div class="form-group">
+              <label>Calories</label>
+              <input id="calories" type="text" placeholder="e.g. 350 kcal" />
+            </div>
+
+            <div class="form-group">
+              <label>Day</label>
+              <input id="day" type="text" placeholder="Mon / Tue / Wed" />
+            </div>
+
+          </div>
+
+          <!-- ADD BUTTON -->
+          <div style="margin-top:16px">
+            <button class="action-btn primary" onclick="addDietPlan()">➕ Add Diet</button>
+          </div>
+        </div>
+
+        <!-- SHOW ADDED DIETS -->
+        <div class="table-card" style="margin-top:20px">
+          <div class="tc-header">
+            <div>
+              <h3>Assigned Diet Plans</h3>
+              <p>All diets given by admin</p>
+            </div>
+          </div>
+
+          <div id="adminDietList">
+            <p style="color:gray">No diet added yet</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RECEIPTS -->
+      <div class="page" id="page-receipts">
+        <div class="page-header">
+          <h1>Receipts</h1>
+          <p>Payment receipts for all successful transactions</p>
+        </div>
+
+        <div class="r-stats-grid">
+          <div class="r-stat-card">
+            <div class="r-stat-icon">🧾</div>
+            <div class="r-stat-info">
+              <div class="r-stat-val" id="rTotalCount">—</div>
+              <div class="r-stat-label">Total Receipts</div>
+            </div>
+          </div>
+          <div class="r-stat-card">
+            <div class="r-stat-icon">💰</div>
+            <div class="r-stat-info">
+              <div class="r-stat-val" id="rTotalRev">—</div>
+              <div class="r-stat-label">Total Revenue</div>
+            </div>
+          </div>
+          <div class="r-stat-card">
+            <div class="r-stat-icon">📅</div>
+            <div class="r-stat-info">
+              <div class="r-stat-val" id="rMonthCount">—</div>
+              <div class="r-stat-label">This Month</div>
+            </div>
+          </div>
+          <div class="r-stat-card">
+            <div class="r-stat-icon">📈</div>
+            <div class="r-stat-info">
+              <div class="r-stat-val" id="rMonthRev">—</div>
+              <div class="r-stat-label">Month Revenue</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="r-filters">
+          <div class="r-search-wrap">
+            <span class="r-search-icon">🔍</span>
+            <input type="text" id="rSearchInput" class="r-search" placeholder="Search by member name or phone…"
+              oninput="receiptsOnSearch(this.value)" />
+          </div>
+          <div class="r-date-wrap">
+            <input type="date" id="rFromDate" class="r-date-input" onchange="receiptsOnFilter()" />
+            <span class="r-date-sep">to</span>
+            <input type="date" id="rToDate" class="r-date-input" onchange="receiptsOnFilter()" />
+          </div>
+          <button class="r-clear-btn" onclick="receiptsClearFilter()">✕ Clear</button>
+        </div>
+
+        <div class="r-table-wrap">
+          <table class="r-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Plan</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="receiptsTableBody">
+              <tr>
+                <td colspan="6" class="r-empty">Loading…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="receiptsPagination"></div>
+
+        <!-- Receipt Preview Modal -->
+        <div class="r-modal-overlay" id="receiptPreviewModal">
+          <div class="r-modal">
+            <div class="r-modal-head">
+              <span>Receipt Preview</span>
+              <div class="r-modal-actions">
+                <button class="r-pdf-btn"
+                  onclick="downloadReceiptPDF(document.getElementById('receiptPreviewModal').dataset.receiptId)">⬇
+                  Download PDF</button>
+                <button class="r-close-btn" onclick="closeReceiptPreview()">✕</button>
+              </div>
+            </div>
+            <div class="r-modal-body" id="receiptPreviewBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="page" id="page-reports">
+        <div class="page-header">
+          <h1>Reports</h1>
+          <p>Reports section</p>
+        </div>
+        <div class="placeholder-card">
+          Reports page placeholder.
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <h1>Settings</h1>
+          <p>Admin settings section</p>
+        </div>
+        <div class="placeholder-card">
+          Settings page placeholder.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modalOverlay">
+    <div class="modal">
+      <h3 id="modalTitle">Modal Title</h3>
+      <div class="modal-desc" id="modalDesc">Modal description</div>
+      <div id="modalBody"></div>
+      <div class="modal-btns">
+        <button type="button" class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="modal-confirm" id="modalConfirmBtn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API + DASHBOARD JS -->
+  <script src="../../js/api.js"></script>
+  <script src="../../js/admin-dashboard.js"></script>
+  <script src="../../js/receipt.js"></script>
+
+  <!-- logout -->
+  <!-- REPLACE your existing inline logout script with this -->
+  <script>
+    function logout() {
+      // ✅ Use the SAME keys that api.js uses
+      clearAccessToken();   // clears tf_token via api.js
+      clearSession();       // clears tf_user + tf_token via api.js
+      window.location.href = "../../index.html";
+    }
+  </script>
+</body>
+
+</html>
