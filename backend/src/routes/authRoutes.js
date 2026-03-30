@@ -52,17 +52,17 @@ const refreshLimiter = rateLimit({
 
 // Public Routes
 router.post("/register", registerLimiter, registerUser);
-router.post("/login",    loginLimiter,    loginUser);
-router.post("/refresh",  refreshLimiter,  refreshToken);
+router.post("/login", loginLimiter, loginUser);
+router.post("/refresh", refreshLimiter, refreshToken);
 
 // OTP Routes
-router.post("/otp/send-register",   otpSendLimiter,   sendOTP);
+router.post("/otp/send-register", otpSendLimiter, sendOTP);
 router.post("/otp/verify-register", otpVerifyLimiter, verifyRegisterOTP);
-router.post("/otp/forgot-password", otpSendLimiter,   sendForgotPasswordOTP);
-router.post("/otp/reset-password",  otpVerifyLimiter, resetPassword);
+router.post("/otp/forgot-password", otpSendLimiter, sendForgotPasswordOTP);
+router.post("/otp/reset-password", otpVerifyLimiter, resetPassword);
 
 // Protected Routes
-router.get("/me",      protect, getMe);
+router.get("/me", protect, getMe);
 router.post("/logout", protect, logoutUser);
 
 module.exports = router;

@@ -6,7 +6,7 @@ exports.getPlans = async (req, res) => {
     const { data, error } = await supabase
       .from("membership_plans")
       .select("*")
-      
+
     if (error) throw error;
 
     res.json({ success: true, data });
@@ -18,7 +18,7 @@ exports.getPlans = async (req, res) => {
 // CREATE PLAN
 exports.createPlan = async (req, res) => {
   try {
-   const { name, price, duration_days, features } = req.body;
+    const { name, price, duration_days, features } = req.body;
 
     const { data, error } = await supabase
       .from("membership_plans")

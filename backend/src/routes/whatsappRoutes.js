@@ -45,13 +45,13 @@ router.get("/me", protect, getMyNotifications);
 // POST   /api/v1/whatsapp/:id/retry                → retry a failed message
 // DELETE /api/v1/whatsapp/:id                      → delete notification record
 
-router.get("/stats",                  protect, adminOnly, getStats);
-router.get("/",                       protect, adminOnly, getAllNotifications);
-router.post("/send",                  protect, adminOnly, sendLimiter,      sendToUser);
-router.post("/send-bulk",             protect, adminOnly, sendLimiter,      sendBulk);
-router.post("/broadcast",             protect, adminOnly, broadcastLimiter, broadcast);
-router.post("/trigger-expiry-alerts", protect, adminOnly,                   triggerExpiryAlerts);
-router.post("/:id/retry",             protect, adminOnly, sendLimiter,      retryFailed);
-router.delete("/:id",                 protect, adminOnly,                   deleteNotification);
+router.get("/stats", protect, adminOnly, getStats);
+router.get("/", protect, adminOnly, getAllNotifications);
+router.post("/send", protect, adminOnly, sendLimiter, sendToUser);
+router.post("/send-bulk", protect, adminOnly, sendLimiter, sendBulk);
+router.post("/broadcast", protect, adminOnly, broadcastLimiter, broadcast);
+router.post("/trigger-expiry-alerts", protect, adminOnly, triggerExpiryAlerts);
+router.post("/:id/retry", protect, adminOnly, sendLimiter, retryFailed);
+router.delete("/:id", protect, adminOnly, deleteNotification);
 
 module.exports = router;

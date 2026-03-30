@@ -42,7 +42,7 @@ const getGym = async (req, res) => {
     const { data, error } = await supabase
       .from("gyms")
       .select("id, name, location, description, image_url, slug, phone, email, opening_hours, is_active, created_at, updated_at")
-      [isId ? "eq" : "eq"](isId ? "id" : "slug", isId ? parseInt(idOrSlug) : idOrSlug)
+    [isId ? "eq" : "eq"](isId ? "id" : "slug", isId ? parseInt(idOrSlug) : idOrSlug)
       .maybeSingle();
 
     if (error) {

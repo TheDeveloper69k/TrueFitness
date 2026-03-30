@@ -138,24 +138,24 @@ const sendToUser = async (req, res) => {
     let error_message = null;
     let sent_at = null;
 
-   try {
-  console.log("[SendToUser] Raw phone from DB:", user.phone);
-  console.log("[SendToUser] Formatted phone:", formatPhone(user.phone));
-  console.log("[SendToUser] TWILIO_WHATSAPP_NUMBER:", process.env.TWILIO_WHATSAPP_NUMBER);
+    try {
+      console.log("[SendToUser] Raw phone from DB:", user.phone);
+      console.log("[SendToUser] Formatted phone:", formatPhone(user.phone));
+      console.log("[SendToUser] TWILIO_WHATSAPP_NUMBER:", process.env.TWILIO_WHATSAPP_NUMBER);
 
-  provider_message_id = await sendWhatsApp(
-    user.phone,
-    `*${title}*\n\n${message}`
-  );
+      provider_message_id = await sendWhatsApp(
+        user.phone,
+        `*${title}*\n\n${message}`
+      );
 
-  sent_at = new Date().toISOString();
-  console.log("[SendToUser] WhatsApp sent. SID:", provider_message_id);
-} catch (smsErr) {
-  console.error("[SendToUser] Twilio full error:", smsErr);
-  console.error("[SendToUser] Twilio error message:", smsErr.message);
-  status = "failed";
-  error_message = smsErr.message;
-}
+      sent_at = new Date().toISOString();
+      console.log("[SendToUser] WhatsApp sent. SID:", provider_message_id);
+    } catch (smsErr) {
+      console.error("[SendToUser] Twilio full error:", smsErr);
+      console.error("[SendToUser] Twilio error message:", smsErr.message);
+      status = "failed";
+      error_message = smsErr.message;
+    }
 
     const { data, error } = await supabase
       .from("whatsapp_notifications")
@@ -183,13 +183,13 @@ const sendToUser = async (req, res) => {
         .json({ success: false, message: "Failed to save notification record" });
     }
 
-   if (status === "failed") {
-  return res.status(500).json({
-    success: false,
-    message: error_message || "Message failed to send via WhatsApp",
-    data,
-  });
-}
+    if (status === "failed") {
+      return res.status(500).json({
+        success: false,
+        message: error_message || "Message failed to send via WhatsApp",
+        data,
+      });
+    }
 
     return res.status(201).json({
       success: true,
