@@ -8,6 +8,8 @@ function normalizeDate(date) {
   return d.toISOString().split("T")[0];
 }
 
+//make changes
+
 function addDays(startDate, days) {
   const d = new Date(startDate);
   if (Number.isNaN(d.getTime())) return null;
