@@ -424,46 +424,56 @@ async function addMember() {
 //  ADMIN PLAN MANAGEMENT (ADD THIS BELOW Plans helpers)
 // ─────────────────────────────────────────────
 
+// ─── REPLACE your loadAdminPlans function with this ───────────
+
 async function loadAdminPlans() {
   const res = await API.get('/plans');
   if (!res || !res.ok) return;
   const plans = res.data.data || [];
   window.currentPlans = plans;
 
-  if (!res || !res.ok) return;
-
   const container = document.getElementById("adminPlansContainer");
   if (!container) return;
+
+  if (!plans.length) {
+    container.innerHTML = `<div class="gen-card" style="text-align:center;color:var(--muted);grid-column:1/-1">No plans found. Add your first plan.</div>`;
+    return;
+  }
 
   container.innerHTML = "";
 
   plans.forEach(plan => {
     const div = document.createElement("div");
-    div.className = "plan-card";
+    div.className = `plan-card${plan.is_active ? '' : ' inactive'}`;
+
+    const features = Array.isArray(plan.features)
+      ? plan.features
+      : typeof plan.features === 'string'
+        ? plan.features.split(',').map(f => f.trim()).filter(Boolean)
+        : [];
+
+    const featuresHtml = features.length
+      ? `<ul>${features.map(f => `<li>${f}</li>`).join('')}</ul>`
+      : '';
+
+    const popularHtml = plan.name === "3 Months"
+      ? `<div class="popular-badge">⭐ Popular</div>`
+      : '';
 
     div.innerHTML = `
-  <div class="plan-name">${plan.name}</div>
-
-  <div class="plan-price">₹${plan.price}</div>
-
-  <div class="plan-period">${plan.duration_days} days</div>
-
-  <ul style="margin-top:10px;font-size:12px;text-align:left">
-    ${(plan.features || []).map(f => `<li>✓ ${f}</li>`).join("")}
-  </ul>
-
-  ${plan.name === "3 Months" ? `<div class="popular-badge">⭐ Popular</div>` : ""}
-
-  <div style="margin-top:12px;display:flex;gap:8px">
-    <button onclick="editPlan(${plan.id})">Edit</button>
-
-    <button onclick="togglePlan(${plan.id}, ${plan.is_active})">
-      ${plan.is_active ? "Deactivate" : "Activate"}
-    </button>
-
-    <button onclick="deletePlan(${plan.id})">Delete</button>
-  </div>
-`;
+      <div class="plan-name">${plan.name}</div>
+      <div class="plan-price">₹${Number(plan.price).toLocaleString('en-IN')}</div>
+      <div class="plan-period">${plan.duration_days} days</div>
+      ${featuresHtml}
+      ${popularHtml}
+      <div class="plan-actions">
+        <button onclick="editPlan(${plan.id})">✏️ Edit</button>
+        <button onclick="togglePlan(${plan.id}, ${plan.is_active})">
+          ${plan.is_active ? '⛔ Deactivate' : '✅ Activate'}
+        </button>
+        <button onclick="deletePlan(${plan.id})">🗑 Delete</button>
+      </div>
+    `;
 
     container.appendChild(div);
   });
@@ -521,12 +531,14 @@ function openAddPlanModal() {
 
 // DELETE PLAN
 async function deletePlan(id) {
-  if (!confirm("Delete this plan?")) return;
+  if (!confirm("Deactivate this plan instead of deleting?")) return;
 
-  const res = await API.delete(`/plans/${id}`);
+  const res = await API.put(`/plans/${id}`, {
+    is_active: false
+  });
 
   if (res?.ok) {
-    showToast("Plan deleted", "success");
+    showToast("Plan deactivated instead of deleted", "success");
     loadAdminPlans();
   }
 }
