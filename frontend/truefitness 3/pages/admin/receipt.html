@@ -1,0 +1,98 @@
+<!-- ============================================================
+  REPLACE your Receipts section placeholder in admin dashboard.html
+  This goes inside the section that shows when Receipts is active
+  ============================================================ -->
+
+<div class="section-header">
+    <div>
+        <h2>Receipts</h2>
+        <p>Payment receipts for all successful transactions</p>
+    </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="r-stats-grid">
+    <div class="r-stat-card">
+        <div class="r-stat-icon">🧾</div>
+        <div class="r-stat-info">
+            <div class="r-stat-val" id="rTotalCount">—</div>
+            <div class="r-stat-label">Total Receipts</div>
+        </div>
+    </div>
+    <div class="r-stat-card">
+        <div class="r-stat-icon">💰</div>
+        <div class="r-stat-info">
+            <div class="r-stat-val" id="rTotalRev">—</div>
+            <div class="r-stat-label">Total Revenue</div>
+        </div>
+    </div>
+    <div class="r-stat-card">
+        <div class="r-stat-icon">📅</div>
+        <div class="r-stat-info">
+            <div class="r-stat-val" id="rMonthCount">—</div>
+            <div class="r-stat-label">This Month</div>
+        </div>
+    </div>
+    <div class="r-stat-card">
+        <div class="r-stat-icon">📈</div>
+        <div class="r-stat-info">
+            <div class="r-stat-val" id="rMonthRev">—</div>
+            <div class="r-stat-label">Month Revenue</div>
+        </div>
+    </div>
+</div>
+
+<!-- FILTERS -->
+<div class="r-filters">
+    <div class="r-search-wrap">
+        <span class="r-search-icon">🔍</span>
+        <input type="text" id="rSearchInput" class="r-search" placeholder="Search by member name or phone…"
+            oninput="receiptsOnSearch(this.value)" />
+    </div>
+    <div class="r-date-wrap">
+        <input type="date" id="rFromDate" class="r-date-input" onchange="receiptsOnFilter()" />
+        <span class="r-date-sep">to</span>
+        <input type="date" id="rToDate" class="r-date-input" onchange="receiptsOnFilter()" />
+    </div>
+    <button class="r-clear-btn" onclick="receiptsClearFilter()">✕ Clear</button>
+</div>
+
+<!-- TABLE -->
+<div class="r-table-wrap">
+    <table class="r-table">
+        <thead>
+            <tr>
+                <th>Member</th>
+                <th>Plan</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="receiptsTableBody">
+            <tr>
+                <td colspan="6" class="r-empty">Loading…</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- PAGINATION -->
+<div id="receiptsPagination"></div>
+
+<!-- RECEIPT PREVIEW MODAL -->
+<div class="modal-overlay r-modal-overlay" id="receiptPreviewModal">
+    <div class="r-modal">
+        <div class="r-modal-head">
+            <span>Receipt Preview</span>
+            <div class="r-modal-actions">
+                <button class="r-pdf-btn"
+                    onclick="downloadReceiptPDF(document.getElementById('receiptPreviewModal').dataset.receiptId)">⬇
+                    Download PDF</button>
+                <button class="r-close-btn" onclick="closeReceiptPreview()">✕</button>
+            </div>
+        </div>
+        <div class="r-modal-body" id="receiptPreviewBody"></div>
+    </div>
+</div>

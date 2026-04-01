@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>True Fitness — Member Dashboard</title>
+<!-- ✅ Path is correct: pages/user/ → ../../css/ -->
+<link rel="stylesheet" href="../../css/user-dashboard.css"/>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <img src="../../../Assets/Gymlogo.png" style="height:40px;" alt="logo">
+      <div class="topbar-name">TRUE FITNESS</div>
+      <div class="topbar-sub">Member Dashboard</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="tb-icon-btn" onclick="openPanel('offersPanel')" title="Exclusive Offers">
+      🎁<div class="tb-badge"></div>
+    </button>
+    <button class="tb-icon-btn" onclick="openPanel('notifPanel')" title="Notifications">
+      🔔<div class="tb-badge"></div>
+    </button>
+    <button class="tb-menu-btn" onclick="openPanel('menuPanel')" title="Menu">☰</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <div class="page-header">
+    <h1>Welcome Back, <span id="userFirstName">User</span>!</h1>
+    <p>Ready to crush your fitness goals today?</p>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-label">This Week</div><div class="stat-icon">🏋️</div></div>
+      <div class="stat-num">12</div>
+      <div class="stat-sub">Workouts Completed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-label">Total Time</div><div class="stat-icon">⏱</div></div>
+      <div class="stat-num">18</div>
+      <div class="stat-sub">Training Hours</div>
+    </div>
+  </div>
+
+  <!-- WORKOUT PLAN + MEMBERSHIP -->
+  <div class="two-col">
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">🏋️</span><h3>Weekly Workout Plan</h3></div>
+      <div class="sc-body" id="workoutList"></div>
+      <div class="add-exercise-form">
+        <select id="exDay">
+          <option value="">Select Day</option>
+          <option>Mon</option><option>Tue</option><option>Wed</option>
+          <option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option>
+        </select>
+        <input type="text" id="exName" placeholder="Exercise"/>
+        <input type="text" id="exDur"  placeholder="Duration"/>
+        <button class="add-btn" onclick="addExercise()">+ Add Exercise</button>
+      </div>
+    </div>
+<div class="card">
+  <h3>Your Membership</h3>
+
+  <p><strong>Plan:</strong> <span id="userPlanName">-</span></p>
+  <p><strong>Price:</strong> <span id="userPlanPrice">-</span></p>
+  <p><strong>Duration:</strong> <span id="userPlanDuration">-</span></p>
+
+  <ul id="userPlanFeatures"></ul>
+</div>
+    <div class="section-card">
+      <div class="sc-header">
+        <span class="sc-icon">💎</span>
+        <h3>Membership</h3>
+        <span class="pill-active" style="margin-left:auto" id="membershipBadge">Active</span>
+      </div>
+      <div class="sc-body">
+        <div class="membership-row"><span class="mem-label">Plan Type</span><span class="mem-val" id="planType">Premium</span></div>
+        <div class="membership-row"><span class="mem-label">Member Since</span><span class="mem-val" id="memberSince">Jan 2025</span></div>
+        <div class="membership-row"><span class="mem-label">Renewal Date</span><span class="mem-val" id="renewalDate">May 5, 2026</span></div>
+        <div class="membership-row" style="border:none"><span class="mem-label">Days Left</span><span class="mem-val accent" id="daysLeft">45</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="membershipProgress" style="width:15%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINER + CLASSES -->
+  <div class="two-col">
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">👤</span><h3>Your Trainer</h3></div>
+      <div class="trainer-row">
+        <div class="trainer-avatar" id="trainerInitial">M</div>
+        <div>
+          <div class="trainer-name" id="trainerName">Manoj</div>
+          <div class="trainer-spec" id="trainerSpec">Strength &amp; Conditioning</div>
+          <div class="trainer-exp">⭐ <span id="trainerExp">8 years experience</span></div>
+        </div>
+      </div>
+      
+    </div>
+
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">📅</span><h3>Today's Classes</h3></div>
+     
+    </div>
+  </div>
+
+  <!-- DIET PLAN + GOALS -->
+  <div class="two-col">
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">🥗</span><h3>Today's Diet Plan</h3></div>
+      <div class="sc-body" id="dietList"></div>
+      <div class="diet-total"><span>Total Calories</span><strong id="totalCals">1,680 kcal</strong></div>
+    </div>
+
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">🎯</span><h3>Weekly Goals</h3></div>
+      <div class="sc-body" id="goalsList"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FLOATING HELP -->
+<button class="help-btn" onclick="showToast('Need help? Contact us at 9877507810','success')">?</button>
+
+<!-- OVERLAY -->
+<div class="panel-overlay" id="panelOverlay" onclick="closeAllPanels()"></div>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="panel" id="notifPanel">
+  <div class="panel-head">
+    <div><h3>Notifications</h3><p>Stay updated with latest alerts</p></div>
+    <button class="panel-close" onclick="closePanel('notifPanel')">✕</button>
+  </div>
+  <div class="panel-body" id="notifBody"></div>
+</div>
+
+<!-- OFFERS PANEL -->
+<div class="panel" id="offersPanel">
+  <div class="panel-head">
+    <div><h3>Exclusive Offers</h3><p>Special deals just for you</p></div>
+    <button class="panel-close" onclick="closePanel('offersPanel')">✕</button>
+  </div>
+  <div class="panel-body" id="offersBody"></div>
+</div>
+
+<!-- MENU PANEL -->
+<div class="panel" id="menuPanel">
+  <div class="panel-head">
+    <div><h3 id="menuWelcome">Welcome, User</h3></div>
+    <button class="panel-close" onclick="closePanel('menuPanel')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="menu-user-chip">
+      <div class="menu-avatar" id="menuAvatarInit">U</div>
+      <div>
+        <div class="menu-uname"  id="menuUserName">User</div>
+        <div class="menu-uemail" id="menuUserPhone">—</div>
+      </div>
+    </div>
+    <div class="menu-section">
+      <div class="menu-section-label">Your Information</div>
+      <div class="menu-item" onclick="openModal('profileModal');closePanel('menuPanel')">
+        <div class="menu-icon">👤</div>
+        <div><div class="menu-text">View Profile</div><div class="menu-sub">Personal info &amp; goals</div></div>
+      </div>
+      <div class="menu-item" onclick="openModal('editProfileModal');closePanel('menuPanel')">
+        <div class="menu-icon">⚙️</div>
+        <div><div class="menu-text">Edit Profile</div><div class="menu-sub">Update your details</div></div>
+      </div>
+    </div>
+    <div class="menu-section">
+      <div class="menu-section-label">Other Information</div>
+      <div class="menu-item" onclick="openModal('aboutModal');closePanel('menuPanel')">
+        <div class="menu-icon">ℹ️</div>
+        <div><div class="menu-text">About Us</div><div class="menu-sub">Learn more</div></div>
+      </div>
+      <div class="menu-item" onclick="openModal('privacyModal');closePanel('menuPanel')">
+        <div class="menu-icon">🔒</div>
+        <div><div class="menu-text">Account Privacy</div><div class="menu-sub">Privacy settings</div></div>
+      </div>
+      <div class="menu-item" onclick="openModal('themeModal');closePanel('menuPanel')">
+        <div class="menu-icon">🎨</div>
+        <div><div class="menu-text">Theme &amp; Appearance</div><div class="menu-sub">Customize your experience</div></div>
+      </div>
+      <div class="menu-item" onclick="openModal('settingsModal');closePanel('menuPanel')">
+        <div class="menu-icon">⚙️</div>
+        <div><div class="menu-text">Settings</div><div class="menu-sub">Account preferences</div></div>
+      </div>
+    </div>
+    <div class="menu-item danger" onclick="logout()">
+      <div class="menu-icon">🚪</div>
+      <div><div class="menu-text">Logout</div><div class="menu-sub">Sign out of account</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">👤</div>
+      <div><div class="modal-title">Your Profile</div><div class="modal-sub">Personal information and fitness goals</div></div>
+      <button class="modal-close-btn" onclick="closeModal('profileModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-avatar-big" id="profileAvatarBig">U</div>
+      <div class="profile-name-big"   id="profileNameBig">User</div>
+      <div class="profile-badge"><span class="pill-active" id="profilePlanBadge">Premium Member</span></div>
+      <div class="profile-grid">
+        <div class="profile-field"><div class="profile-field-label">Email</div><div class="profile-field-val" id="profileEmail">user@truefitness.com</div></div>
+        <div class="profile-field"><div class="profile-field-label">Phone</div><div class="profile-field-val" id="profilePhone">—</div></div>
+        <div class="profile-field"><div class="profile-field-label">Member Since</div><div class="profile-field-val" id="profileSince">Jan 2025</div></div>
+        <div class="profile-field"><div class="profile-field-label">Membership Type</div><div class="profile-field-val" id="profilePlanType">Premium Annual</div></div>
+      </div>
+      <div class="goals-section">
+        <div class="goals-label">Fitness Goals</div>
+        <div class="goal-chip"><span class="goal-chip-icon">💪</span>Build muscle mass and strength</div>
+        <div class="goal-chip"><span class="goal-chip-icon">🏃</span>Improve overall endurance</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">⚙️</div>
+      <div><div class="modal-title">Edit Profile</div><div class="modal-sub">Update your personal information</div></div>
+      <button class="modal-close-btn" onclick="closeModal('editProfileModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Full Name</label><input type="text"  id="editName"  placeholder="Your full name"/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" id="editEmail" placeholder="your@email.com"/></div>
+        <div class="form-group"><label>Phone</label><input type="tel"   id="editPhone" placeholder="+91 98765 43210"/></div>
+      </div>
+      <div class="form-group"><label>Fitness Goals</label><textarea id="editGoals" rows="3" placeholder="Build muscle mass and strength&#10;Improve overall endurance"></textarea></div>
+      <div class="modal-btns">
+        <button class="modal-cancel"  onclick="closeModal('editProfileModal')">Cancel</button>
+        <button class="modal-confirm" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THEME MODAL -->
+<div class="modal-overlay" id="themeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">🎨</div>
+      <div><div class="modal-title">Theme &amp; Appearance</div><div class="modal-sub">Customize your dashboard experience</div></div>
+      <button class="modal-close-btn" onclick="closeModal('themeModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">🌙 Theme Mode</div>
+      <div class="theme-modes">
+        <div class="theme-mode-btn selected" id="darkModeBtn"  onclick="setTheme('dark')">
+          <div class="theme-mode-name">🌙 Dark Mode</div>
+          <div class="theme-mode-desc">Current theme with dark backgrounds</div>
+        </div>
+        <div class="theme-mode-btn" id="lightModeBtn" onclick="setTheme('light')">
+          <div class="theme-mode-name">☀️ Light Mode</div>
+          <div class="theme-mode-desc">Light theme with bright backgrounds</div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">🎨 Accent Color</div>
+      <div class="color-grid">
+        <div class="color-btn selected" style="background:#e8281a" onclick="setAccent('#e8281a','#b81f14',this)">Red</div>
+        <div class="color-btn" style="background:#3b82f6" onclick="setAccent('#3b82f6','#1d4ed8',this)">Blue</div>
+        <div class="color-btn" style="background:#22c55e" onclick="setAccent('#22c55e','#16a34a',this)">Green</div>
+        <div class="color-btn" style="background:#8b5cf6" onclick="setAccent('#8b5cf6','#6d28d9',this)">Purple</div>
+        <div class="color-btn" style="background:#f97316" onclick="setAccent('#f97316','#ea580c',this)">Orange</div>
+        <div class="color-btn" style="background:#ec4899" onclick="setAccent('#ec4899','#db2777',this)">Pink</div>
+        <div class="color-btn" style="background:#06b6d4" onclick="setAccent('#06b6d4','#0891b2',this)">Cyan</div>
+        <div class="color-btn" style="background:#eab308" onclick="setAccent('#eab308','#ca8a04',this)">Yellow</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">Preview</div>
+      <div class="theme-preview">
+        <div class="preview-card-inner">
+          <div class="preview-dot"></div>
+          <div><div class="preview-text">Sample Card</div><div class="preview-sub">This is how your theme will look</div></div>
+        </div>
+        <button class="preview-btn" id="previewBtn">Sample Button with Accent</button>
+      </div>
+      <div class="theme-modal-btns">
+        <button class="theme-reset" onclick="resetTheme()">Reset to Default</button>
+        <button class="theme-done"  onclick="closeModal('themeModal');showToast('Theme saved!','success')">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">⚙️</div>
+      <div><div class="modal-title">Account Settings</div><div class="modal-sub">Manage your account preferences</div></div>
+      <button class="modal-close-btn" onclick="closeModal('settingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-section">
+        <div class="settings-section-label">Notification Preferences</div>
+        <div class="toggle-item"><div class="toggle-info"><h4>Email Notifications</h4><p>Receive updates via email</p></div><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-item"><div class="toggle-info"><h4>SMS Notifications</h4><p>Get text message alerts</p></div><button class="toggle-switch" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-item"><div class="toggle-info"><h4>Workout Reminders</h4><p>Daily training reminders</p></div><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Privacy Settings</div>
+        <div class="toggle-item"><div class="toggle-info"><h4>Profile Visibility</h4><p>Show profile to other members</p></div><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-item"><div class="toggle-info"><h4>Activity Sharing</h4><p>Share your workouts on social</p></div><button class="toggle-switch" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <button class="modal-confirm" style="width:100%" onclick="closeModal('settingsModal');showToast('Settings saved!','success')">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">ℹ️</div>
+      <div><div class="modal-title">About True Fitness</div><div class="modal-sub">Your premium fitness partner</div></div>
+      <button class="modal-close-btn" onclick="closeModal('aboutModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="about-section">
+        <h4>Our Mission</h4>
+        <p>At True Fitness, we're committed to transforming lives through fitness. We believe that everyone deserves access to world-class training facilities, expert guidance, and a supportive community.</p>
+      </div>
+      <div class="about-section">
+        <h4>What We Offer</h4>
+        <div class="about-feature"><span class="about-feature-icon">🏋️</span><div class="about-feature-text"><h5>State-of-the-Art Equipment</h5><p>Access to the latest fitness equipment and technology</p></div></div>
+        <div class="about-feature"><span class="about-feature-icon">👨‍🏫</span><div class="about-feature-text"><h5>Expert Trainers</h5><p>Certified professionals dedicated to your success</p></div></div>
+        <div class="about-feature"><span class="about-feature-icon">📅</span><div class="about-feature-text"><h5>Flexible Schedules</h5><p>Classes and sessions that fit your lifestyle</p></div></div>
+      </div>
+      <div class="about-section">
+        <h4>Contact Us</h4>
+        <div class="contact-row"><span>📞</span><span>9877507810, 8837740652</span></div>
+        <div class="contact-row"><span>📍</span><span>SCO 1,2,3 Sector-115, Santemajra, Kharar Mohali</span></div>
+        <div class="contact-row"><span>✉️</span><span>info@truefitness.com</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY MODAL -->
+<div class="modal-overlay" id="privacyModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon">🔒</div>
+      <div><div class="modal-title">Account Privacy</div><div class="modal-sub">Privacy settings and data</div></div>
+      <button class="modal-close-btn" onclick="closeModal('privacyModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="privacy-section">
+        <h4>Data Usage</h4>
+        <div class="privacy-text">We collect your fitness data to personalize your experience and improve our services. Your data is never sold to third parties.</div>
+      </div>
+      <div class="privacy-section">
+        <h4>Profile Visibility</h4>
+        <div class="toggle-item"><div class="toggle-info"><h4>Show Profile to Members</h4><p>Allow other members to see your profile</p></div><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-item"><div class="toggle-info"><h4>Share Progress Stats</h4><p>Visible on leaderboard</p></div><button class="toggle-switch" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <div class="danger-zone">
+        <h4>Danger Zone</h4>
+        <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+        <button class="danger-btn" onclick="showToast('Please contact admin to delete your account')">Request Account Deletion</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ SCRIPTS: api.js MUST be first, then auth.js, then user-dashboard.js -->
+<script src="../../js/api.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/user-dashboard.js"></script>
+</body>
+</html>

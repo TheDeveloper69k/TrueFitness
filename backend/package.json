@@ -1,0 +1,28 @@
+{
+  "name": "truefitness-backend",
+  "version": "1.0.0",
+  "description": "TrueFitness Gym Management API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.3",
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
+    "razorpay": "^2.9.6",
+    "twilio": "^5.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

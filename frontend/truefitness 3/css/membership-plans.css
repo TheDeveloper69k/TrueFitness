@@ -1,0 +1,148 @@
+/* ══════════════════════════════════════════
+   MEMBERSHIP PLANS — append to dashboard.css
+══════════════════════════════════════════ */
+
+#adminPlansContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.plan-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.plan-card:hover {
+  border-color: rgba(232, 40, 26, 0.35);
+  transform: translateY(-2px);
+}
+
+.plan-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.plan-price {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--red);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.plan-period {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.plan-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan-card ul li {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plan-card ul li::before {
+  content: '✓';
+  color: var(--green);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.popular-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--amber);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  width: fit-content;
+  margin-bottom: 10px;
+}
+
+/* Plan action buttons */
+.plan-card .plan-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.plan-card button {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card2);
+  color: var(--muted);
+  transition: all 0.15s;
+}
+
+.plan-card button:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+  border-color: #444;
+}
+
+.plan-card button:first-child:hover {
+  border-color: var(--blue);
+  color: #93c5fd;
+}
+
+.plan-card button:nth-child(2):hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.plan-card button:last-child:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+/* Active indicator stripe */
+.plan-card.inactive {
+  opacity: 0.55;
+}
+
+.plan-card.inactive::after {
+  content: 'Inactive';
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #f87171;
+  background: rgba(232, 40, 26, 0.12);
+  border: 1px solid rgba(232, 40, 26, 0.25);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
