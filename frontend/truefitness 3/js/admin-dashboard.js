@@ -1843,13 +1843,46 @@ window.deleteNotifConfirm = deleteNotifConfirm;
 // ─────────────────────────────────────────────
 //  Diet — Add (Admin)
 // ─────────────────────────────────────────────
+async function searchUserForDiet(value) {
+  const resultBox = document.getElementById("dietUserResult");
+  const hiddenId = document.getElementById("dietUserId");
 
+  // Clear previous result if input is too short
+  if (!value || value.length < 3) {
+    resultBox.innerHTML = "";
+    hiddenId.value = "";
+    return;
+  }
+
+  resultBox.innerHTML = `<div style="padding:8px;color:#aaa;font-size:12px">Searching...</div>`;
+
+  const res = await API.get(`/users/search?phone=${encodeURIComponent(value)}`);
+
+  if (!res?.ok || !res.data?.data) {
+    resultBox.innerHTML = `<div style="padding:8px;color:#f87171;font-size:12px">User not found</div>`;
+    hiddenId.value = "";
+    return;
+  }
+
+  const user = res.data.data;
+
+  // ✅ This is the key line — sets the hidden dietUserId
+  hiddenId.value = user.id;
+
+  resultBox.innerHTML = `
+    <div style="padding:10px;border:1px solid #2b6a3a;border-radius:6px;background:#0e2318">
+      <div style="font-weight:600;font-size:13px;color:#4ade80">✅ ${escapeHtml(user.name || "User")}</div>
+      <div style="font-size:11px;color:#aaa">ID: ${user.id} · Phone: ${escapeHtml(user.phone || "—")}</div>
+    </div>
+  `;
+}
 async function addDietPlan() {
   const userId = document.getElementById("dietUserId")?.value;
   const mealType = document.getElementById("mealType")?.value;
   const food = document.getElementById("foodName")?.value;
   const calories = document.getElementById("calories")?.value;
   const day = document.getElementById("day")?.value;
+  console.log("DEBUG:", { userId, mealType, food, calories, day });
 
   if (!userId || !mealType || !food) {
     return showToast("Please fill all required fields", "error");
