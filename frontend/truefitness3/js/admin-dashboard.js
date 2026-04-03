@@ -355,7 +355,14 @@ function openAddMemberModal() {
     <div class="form-group"><label>Full Name</label><input id="mName" type="text" placeholder="John Doe"/></div>
     <div class="form-group"><label>Phone</label><input id="mPhone" type="tel" placeholder="9876543210" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"/></div>
     <div class="form-group"><label>Email (optional)</label><input id="mEmail" type="email" placeholder="john@example.com"/></div>
-    <div class="form-group"><label>Password</label><input id="mPass" type="password" placeholder="Password"/></div>
+    <div class="form-group">
+  <label>Password</label>
+  <div style="position:relative">
+    <input id="mPass" type="password" placeholder="Password" style="padding-right:40px;width:100%"/>
+    <span onclick="const i=document.getElementById('mPass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" 
+      style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none">👁</span>
+  </div>
+</div>
     `,
     addMember,
     "Create User"
