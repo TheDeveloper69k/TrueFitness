@@ -298,7 +298,7 @@ async function loadPlans() {
 }
 function selectPlan(planId) {
   localStorage.setItem("selectedPlan", planId);
-  openModal("signupModal");
+  openModal("loginModal");  // ← change signupModal to loginModal
 }
 window.addEventListener('scroll', () => {
   const sections = ['home', 'about', 'trainers', 'plans', 'contact'];
