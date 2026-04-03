@@ -63,8 +63,9 @@ button { cursor: pointer; font-family: var(--font); }
 .nav-links a { font-size: 14px; font-weight: 500; color: var(--muted); transition: color 0.2s; }
 .nav-links a:hover, .nav-links a.active { color: var(--white); }
 .nav-actions { display: flex; gap: 10px; align-items: center; }
-.nav-login { background: transparent; border: 1px solid var(--border); color: var(--white); padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+.nav-login {  background: var(--red); border: 1px solid var(--border); color: var(--white); padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
 .nav-login:hover { border-color: var(--white); }
+.nav-login:hover { background: var(--red-dark); }
 .nav-signup { background: var(--red); border: none; color: #fff; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
 .nav-signup:hover { background: var(--red-dark); }
 .hamburger { display: none; background: none; border: none; color: var(--white); font-size: 22px; }
