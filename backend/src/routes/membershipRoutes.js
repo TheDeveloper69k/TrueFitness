@@ -11,6 +11,7 @@ const {
   updateMembershipStatus,
   getMembershipStats,
   renewMembership,
+   deleteMember,
 } = require("../controllers/membershipController");
 
 const { protect, adminOnly } = require("../middlewares/authMiddleware");
@@ -32,5 +33,6 @@ router.get("/user/:userId", protect, adminOnly, getUserMembership);
 router.post("/assign", protect, adminOnly, writeLimiter, assignMembership);
 router.patch("/:id/status", protect, adminOnly, writeLimiter, updateMembershipStatus);
 router.patch("/:id/renew", protect, adminOnly, writeLimiter, renewMembership);
+router.delete("/user/:userId", protect, adminOnly, deleteMember);
 
 module.exports = router;
