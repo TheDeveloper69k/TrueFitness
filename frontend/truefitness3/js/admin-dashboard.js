@@ -1843,7 +1843,36 @@ window.deleteNotifConfirm = deleteNotifConfirm;
 // ─────────────────────────────────────────────
 //  Diet — Add (Admin)
 // ─────────────────────────────────────────────
+async function searchUserForDiet(value) {
+  const resultBox = document.getElementById("dietUserResult");
+  const hiddenId = document.getElementById("dietUserId");
 
+  if (!value || value.length < 3) {
+    if (resultBox) resultBox.innerHTML = "";
+    if (hiddenId) hiddenId.value = "";
+    return;
+  }
+
+  if (resultBox) resultBox.innerHTML = `<div style="padding:8px;color:#aaa;font-size:12px">Searching...</div>`;
+
+  const res = await API.get(`/users/search?phone=${encodeURIComponent(value)}`);
+
+  if (!res?.ok || !res.data?.data) {
+    if (resultBox) resultBox.innerHTML = `<div style="padding:8px;color:#f87171;font-size:12px">User not found</div>`;
+    if (hiddenId) hiddenId.value = "";
+    return;
+  }
+
+  const user = res.data.data;
+  if (hiddenId) hiddenId.value = user.id;
+
+  if (resultBox) resultBox.innerHTML = `
+    <div style="padding:10px;border:1px solid #2b6a3a;border-radius:6px;background:#0e2318;margin-top:6px">
+      <div style="font-weight:600;font-size:13px;color:#4ade80">✅ ${escapeHtml(user.name || "User")}</div>
+      <div style="font-size:11px;color:#aaa">ID: ${user.id} · Phone: ${escapeHtml(user.phone || "—")}</div>
+    </div>
+  `;
+}
 async function addDietPlan() {
   const userId = document.getElementById("dietUserId")?.value;
   const mealType = document.getElementById("mealType")?.value;
