@@ -34,9 +34,9 @@ const escapeJsString = (str = "") =>
 let currentMemberFilter = "all";
 let cachedPlans = [];
 let cachedTrainers = [];
-let cachedMemberRows = [];   // all rows from last fetch — used by search
-let membersSearchQuery = "";   // current search string (lowercase, trimmed)
-let memberSearchTimer = null; // debounce handle
+let cachedMemberRows = [];
+let membersSearchQuery = "";
+let memberSearchTimer = null;
 
 // ─────────────────────────────────────────────
 //  Navigation / sidebar
@@ -49,16 +49,13 @@ function navigate(page, el = null) {
   document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
   if (el) el.classList.add("active");
 
-  // ✅ ADD THIS
   if (page === "membership") {
     loadAdminPlans();
   }
-   if (page === "diet") {
-    loadDiet("all");   // ← ADD THIS
+  if (page === "diet") {
+    loadDiet("all");
   }
-
-  if (page === 'receipts') loadReceipts(1);
-
+  if (page === "receipts") loadReceipts(1);
 }
 
 function toggleSidebar() {
@@ -78,7 +75,7 @@ function toggleAll(source, tbodyId) {
 }
 
 // ─────────────────────────────────────────────
-//  Global topbar search  (filters visible rows)
+//  Global topbar search
 // ─────────────────────────────────────────────
 
 function handleSearch(value) {
@@ -98,10 +95,6 @@ function handleSearch(value) {
 //  Members page — dedicated search
 // ─────────────────────────────────────────────
 
-/**
- * Called on every keypress in the Members search input.
- * Debounces 280 ms then re-renders the members table.
- */
 function debouncedMemberSearch(value) {
   clearTimeout(memberSearchTimer);
   memberSearchTimer = setTimeout(() => {
@@ -110,9 +103,6 @@ function debouncedMemberSearch(value) {
   }, 280);
 }
 
-/**
- * Resets the search input and re-renders showing all cached rows.
- */
 function clearMemberSearch() {
   const input = document.getElementById("memberSearch");
   if (input) input.value = "";
@@ -217,7 +207,6 @@ async function loadTrainerStats() {
 
 function setMemberFilter(filter) {
   currentMemberFilter = filter || "all";
-  // Clear search when switching filter tabs
   membersSearchQuery = "";
   const input = document.getElementById("memberSearch");
   if (input) input.value = "";
@@ -243,8 +232,6 @@ async function loadMembers(targetTbodyId = "memberBody") {
   }
 
   const rows = res.data.data || [];
-
-  // Cache rows so the search can filter without an extra API call
   cachedMemberRows = rows;
 
   renderMemberTable(targetTbodyId, rows, currentMemberFilter);
@@ -254,10 +241,6 @@ async function loadMembers(targetTbodyId = "memberBody") {
   }
 }
 
-/**
- * Highlights all occurrences of `query` inside `text`.
- * Returns safe HTML string.
- */
 function highlightMatch(text, query) {
   const safe = escapeHtml(String(text));
   if (!query) return safe;
@@ -269,16 +252,10 @@ function highlightMatch(text, query) {
   );
 }
 
-/**
- * Renders the member table.
- * When tbodyId === "memberBody" it also applies the members search filter
- * and updates the result-count info bar.
- */
 function renderMemberTable(tbodyId, rows, filter = "all") {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
 
-  // ── Apply search filter only on the Members page table ──
   let filtered = rows;
   const isSearchable = tbodyId === "memberBody";
 
@@ -290,7 +267,6 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
     });
   }
 
-  // ── Update result count info bar ──
   if (isSearchable) {
     const infoEl = document.getElementById("memberSearchInfo");
     if (infoEl) {
@@ -303,7 +279,6 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
     }
   }
 
-  // ── Empty state ──
   if (!filtered.length) {
     let emptyText;
     if (isSearchable && membersSearchQuery) {
@@ -323,8 +298,6 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
     return;
   }
 
-  // ── Render rows ──
-  // Use the search query for highlighting only in the Members table
   const hlQuery = isSearchable ? membersSearchQuery : "";
 
   tbody.innerHTML = filtered
@@ -345,6 +318,9 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
       const plan = escapeHtml(m.monthly_plan || "-");
       const amount = Number(m.final_amount ?? 0);
 
+      // user_id = actual user, m.id = membership row
+      const deleteUserId = m.user_id || m.id;
+
       return `
       <tr>
         <td><input type="checkbox"/></td>
@@ -358,6 +334,8 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="tc-btn" onclick="openStatusModal(${m.id}, '${m.status || "active"}')">✏️ Status</button>
             <button class="tc-btn" onclick="openRenewMembershipModal(${m.id}, '${safeNameForJs}', '${escapeJsString(m.monthly_plan || "")}')">🔄 Renew</button>
+            <button class="tc-btn" style="color:#f87171;border-color:rgba(232,40,26,.35)"
+              onclick="openDeleteMemberModal('${deleteUserId}', '${safeNameForJs}')">🗑 Delete</button>
           </div>
         </td>
       </tr>`;
@@ -421,13 +399,8 @@ async function addMember() {
 }
 
 // ─────────────────────────────────────────────
-//  Plans helpers
+//  ADMIN PLAN MANAGEMENT
 // ─────────────────────────────────────────────
-// ─────────────────────────────────────────────
-//  ADMIN PLAN MANAGEMENT (ADD THIS BELOW Plans helpers)
-// ─────────────────────────────────────────────
-
-// ─── REPLACE your loadAdminPlans function with this ───────────
 
 async function loadAdminPlans() {
   const res = await API.get('/plans');
@@ -482,7 +455,6 @@ async function loadAdminPlans() {
   });
 }
 
-// ADD PLAN
 function openAddPlanModal() {
   openModal(
     "Add Plan",
@@ -492,20 +464,18 @@ function openAddPlanModal() {
       <label>Name</label>
       <input id="planName" />
     </div>
-
     <div class="form-group">
       <label>Price</label>
       <input id="planPrice" type="number" />
     </div>
-
     <div class="form-group">
       <label>Duration</label>
       <input id="planDuration" type="number" />
     </div>
     <div class="form-group">
-  <label>Features (comma separated)</label>
-  <input id="planFeatures" placeholder="Gym, Trainer, Diet" />
-</div>
+      <label>Features (comma separated)</label>
+      <input id="planFeatures" placeholder="Gym, Trainer, Diet" />
+    </div>
     `,
     async () => {
       const name = document.getElementById("planName").value;
@@ -516,6 +486,7 @@ function openAddPlanModal() {
         .value
         .split(",")
         .map(f => f.trim());
+
       const res = await API.post('/plans', {
         name,
         price,
@@ -532,13 +503,10 @@ function openAddPlanModal() {
   );
 }
 
-// DELETE PLAN
 async function deletePlan(id) {
   if (!confirm("Deactivate this plan instead of deleting?")) return;
 
-  const res = await API.put(`/plans/${id}`, {
-    is_active: false
-  });
+  const res = await API.put(`/plans/${id}`, { is_active: false });
 
   if (res?.ok) {
     showToast("Plan deactivated instead of deleted", "success");
@@ -546,10 +514,6 @@ async function deletePlan(id) {
   }
 }
 
-// TEMP EDIT
-function editPlan(id) {
-  alert("Edit coming next");
-}
 async function fetchPlans() {
   const res = await API.get("/plans");
   if (!res?.ok) return [];
@@ -813,6 +777,36 @@ async function renewMembership(membershipId) {
   } else {
     showToast(res?.data?.message || "Failed to renew membership", "error");
   }
+}
+
+// ─────────────────────────────────────────────
+//  Delete Member
+// ─────────────────────────────────────────────
+
+function openDeleteMemberModal(userId, memberName) {
+  openModal(
+    "🗑 Delete Member",
+    `Permanently delete "${memberName}"?`,
+    `<p style="font-size:13px;color:#f87171;line-height:1.6">
+      ⚠️ This will <strong>permanently remove</strong> the member,
+      all their memberships, and payment records.<br/><br/>
+      This action <strong>cannot be undone</strong>.
+    </p>`,
+    async () => {
+      const res = await API.delete(`/memberships/user/${userId}`);
+
+      if (res?.ok) {
+        showToast("Member deleted successfully 🗑️", "success");
+        closeModal();
+        await loadDashboardStats();
+        await loadMembers();
+        return;
+      }
+
+      showToast(res?.data?.message || "Failed to delete member", "error");
+    },
+    "Delete"
+  );
 }
 
 // ─────────────────────────────────────────────
@@ -1252,6 +1246,7 @@ async function removeTrainerAssignment(memberId) {
 
   showToast(res?.data?.message || "Failed to remove trainer assignment", "error");
 }
+
 // ═════════════════════════════════════════════
 //  NOTIFICATIONS MODULE
 // ═════════════════════════════════════════════
@@ -1840,12 +1835,11 @@ window.triggerExpiryAlertsNow = triggerExpiryAlertsNow;
 window.openViewNotifModal = openViewNotifModal;
 window.openEditNotifModal = openEditNotifModal;
 window.deleteNotifConfirm = deleteNotifConfirm;
-// ─────────────────────────────────────────────
-//  Init
-// ─────────────────────────────────────────────
+
 // ─────────────────────────────────────────────
 //  Diet — Add (Admin)
 // ─────────────────────────────────────────────
+
 async function searchUserForDiet(value) {
   const resultBox = document.getElementById("dietUserResult");
   const hiddenId = document.getElementById("dietUserId");
@@ -1876,6 +1870,7 @@ async function searchUserForDiet(value) {
     </div>
   `;
 }
+
 async function addDietPlan() {
   const userId = document.getElementById("dietUserId")?.value;
   const mealType = document.getElementById("mealType")?.value;
@@ -1898,27 +1893,24 @@ async function addDietPlan() {
   if (res?.ok) {
     showToast("Diet added successfully", "success");
 
-    // ✅ CLEAR INPUTS
     document.getElementById("dietUserId").value = "";
     document.getElementById("mealType").value = "";
     document.getElementById("foodName").value = "";
     document.getElementById("calories").value = "";
     document.getElementById("day").value = "";
 
-    // ✅ LOAD DATA AGAIN
     loadDiet(userId);
-
   } else {
     showToast(res?.data?.error || "Failed to add diet", "error");
   }
 }
+
 async function loadDiet(userId = null) {
   const list = document.getElementById("adminDietList");
   if (!list) return;
 
   list.innerHTML = "<p style='color:gray'>Loading...</p>";
 
-  // if no userId, take from input
   if (!userId) {
     userId = document.getElementById("dietUserId")?.value;
   }
@@ -1932,9 +1924,6 @@ async function loadDiet(userId = null) {
       res = await API.get(`/diet/${userId}`);
     }
 
-    console.log("DATA:", res);
-
-    // ✅ VERY IMPORTANT CHECK
     if (!res || !res.ok) {
       list.innerHTML = "<p style='color:red'>Failed to load diet</p>";
       return;
@@ -1951,34 +1940,18 @@ async function loadDiet(userId = null) {
 
     data.forEach(item => {
       list.innerHTML += `
-        <div style="
-          padding:12px;
-          border-bottom:1px solid #333;
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-        ">
-
+        <div style="padding:12px;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">
           <div>
             <strong>${item.meal_type}</strong> - ${item.food_name}
             <div>${item.calories || 0}</div>
             <small>${item.day || ""}</small>
           </div>
-
-          <button 
+          <button
             onclick="deleteDiet('${item.id}', ${item.user_id})"
-            style="
-              background:red;
-              color:white;
-              border:none;
-              padding:6px 10px;
-              border-radius:6px;
-              cursor:pointer;
-            "
+            style="background:red;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;"
           >
             ❌ Delete
           </button>
-
         </div>
       `;
     });
@@ -1988,6 +1961,7 @@ async function loadDiet(userId = null) {
     list.innerHTML = "<p style='color:red'>Something went wrong</p>";
   }
 }
+
 async function deleteDiet(id, userId) {
   const confirmDelete = confirm("Delete this diet?");
   if (!confirmDelete) return;
@@ -1995,15 +1969,17 @@ async function deleteDiet(id, userId) {
   const res = await API.delete(`/diet/${id}`);
 
   if (res.ok) {
-    showToast("Deleted successfully", "success"); // 🔥 use toast instead of alert
+    showToast("Deleted successfully", "success");
     loadDiet(userId);
   } else {
     showToast("Delete failed", "error");
   }
 }
+
 // ─────────────────────────────────────────────
-// TOGGLE PLAN ACTIVE
+//  TOGGLE PLAN ACTIVE
 // ─────────────────────────────────────────────
+
 async function togglePlan(id, currentStatus) {
   const res = await API.put(`/plans/${id}`, {
     is_active: !currentStatus
@@ -2015,8 +1991,9 @@ async function togglePlan(id, currentStatus) {
 }
 
 // ─────────────────────────────────────────────
-// EDIT PLAN
+//  EDIT PLAN
 // ─────────────────────────────────────────────
+
 function editPlan(id) {
   const plans = window.currentPlans || [];
   const plan = plans.find(p => p.id == id);
@@ -2058,6 +2035,11 @@ function editPlan(id) {
     }
   );
 }
+
+// ─────────────────────────────────────────────
+//  Init
+// ─────────────────────────────────────────────
+
 document.addEventListener("DOMContentLoaded", async () => {
   await ensurePlansLoaded();
   await loadDashboardStats();
@@ -2066,5 +2048,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadTrainers();
   await loadAdminPlans();
 });
-
-//Change

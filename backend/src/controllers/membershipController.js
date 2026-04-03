@@ -816,5 +816,72 @@ exports.getMembershipStats = async (req, res) => {
       message: "Server error while fetching membership stats",
       error: err.message,
     });
+    
+  }
+};
+// Admin: delete member (user + their memberships)
+exports.deleteMember = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // 1. Delete all memberships for this user
+    const { error: membershipError } = await supabase
+      .from("user_memberships")
+      .delete()
+      .eq("user_id", userId);
+
+    if (membershipError) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to delete user memberships",
+        error: membershipError.message,
+      });
+    }
+
+    // 2. Delete payments for this user
+    const { error: paymentError } = await supabase
+      .from("payments")
+      .delete()
+      .eq("user_id", userId);
+
+    if (paymentError) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to delete user payments",
+        error: paymentError.message,
+      });
+    }
+
+    // 3. Delete the user itself
+    const { error: userError } = await supabase
+      .from("users")
+      .delete()
+      .eq("id", userId);
+
+    if (userError) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to delete user",
+        error: userError.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Member and all associated data deleted successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error while deleting member",
+      error: err.message,
+    });
   }
 };
