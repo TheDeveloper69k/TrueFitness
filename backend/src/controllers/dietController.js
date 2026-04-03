@@ -45,7 +45,7 @@ const getUserDiet = async (req, res) => {
 
     const { data, error } = await supabase
       .from("diet_plans")
-      .select("*")
+      .select("*, users(name, phone)")
       .eq("user_id", userId)
       .order("created_at", { ascending: true });
 
@@ -92,7 +92,7 @@ const getAllDiet = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("diet_plans")
-      .select("*")
+      .select("*, users(name, phone)")
       .order("created_at", { ascending: true });
 
     if (error) {

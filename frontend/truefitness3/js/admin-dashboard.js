@@ -1946,22 +1946,30 @@ async function loadDiet(userId = null) {
     list.innerHTML = "";
 
     data.forEach(item => {
-      list.innerHTML += `
-        <div style="padding:12px;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <strong>${item.meal_type}</strong> - ${item.food_name}
-            <div>${item.calories || 0}</div>
-            <small>${item.day || ""}</small>
+  list.innerHTML += `
+    <div style="padding:12px;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:34px;height:34px;border-radius:50%;background:rgba(232,40,26,.16);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">
+            ${(item.users?.name || item.full_name || "?").charAt(0).toUpperCase()}
           </div>
-          <button
-            onclick="deleteDiet('${item.id}', ${item.user_id})"
-            style="background:red;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;"
-          >
-            ❌ Delete
-          </button>
+          <div>
+            <div style="font-weight:600;font-size:13px">${escapeHtml(item.users?.name || item.full_name || "Unknown")}</div>
+            <div style="font-size:11px;color:var(--muted)">📞 ${escapeHtml(item.users?.phone || item.phone || "—")}</div>
+          </div>
         </div>
-      `;
-    });
+        <div style="font-size:13px"><strong>${escapeHtml(item.meal_type)}</strong> — ${escapeHtml(item.food_name)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${item.calories || 0} kcal &nbsp;·&nbsp; ${escapeHtml(item.day || "—")}</div>
+      </div>
+      <button
+        onclick="deleteDiet('${item.id}', ${item.user_id})"
+        style="background:red;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;"
+      >
+        ❌ Delete
+      </button>
+    </div>
+  `;
+});
 
   } catch (err) {
     console.error("LOAD DIET ERROR:", err);
