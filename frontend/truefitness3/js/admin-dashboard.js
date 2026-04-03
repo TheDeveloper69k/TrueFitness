@@ -353,7 +353,7 @@ function openAddMemberModal() {
     "Register a new user account",
     `
     <div class="form-group"><label>Full Name</label><input id="mName" type="text" placeholder="John Doe"/></div>
-    <div class="form-group"><label>Phone</label><input id="mPhone" type="tel" placeholder="9876543210"/></div>
+    <div class="form-group"><label>Phone</label><input id="mPhone" type="tel" placeholder="9876543210" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"/></div>
     <div class="form-group"><label>Email (optional)</label><input id="mEmail" type="email" placeholder="john@example.com"/></div>
     <div class="form-group"><label>Password</label><input id="mPass" type="password" placeholder="Password"/></div>
     `,
@@ -371,7 +371,7 @@ async function addMember() {
   if (!name) return showToast("Full name is required", "error");
   if (name.length < 2) return showToast("Please enter a valid full name", "error");
   if (!phone) return showToast("Phone is required", "error");
-  if (!/^[0-9]{10,15}$/.test(phone)) return showToast("Phone must be 10 to 15 digits only", "error");
+ if (!/^[0-9]{10}$/.test(phone)) return showToast("Phone number must be exactly 10 digits", "error");
   if (!password) return showToast("Password is required", "error");
   if (password.length < 6) return showToast("Password must be at least 6 characters", "error");
 
@@ -872,7 +872,7 @@ function openAddTrainerModal() {
 
     <div class="form-group">
       <label>Phone</label>
-      <input id="trainerPhone" type="tel" placeholder="9876543210" />
+      <input id="trainerPhone" type="tel" placeholder="9876543210" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)" />
     </div>
     `,
     addTrainer,
@@ -1015,7 +1015,7 @@ function openEditTrainerModal(id, name, specialization, experience, phone) {
 
     <div class="form-group">
       <label>Phone</label>
-      <input id="editTrainerPhone" type="tel" value="${escapeHtml(phone || "")}" />
+     <input id="editTrainerPhone" type="tel" value="${escapeHtml(phone || "")}" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)" />
     </div>
     `,
     () => updateTrainer(id),
