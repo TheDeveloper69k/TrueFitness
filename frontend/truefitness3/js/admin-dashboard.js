@@ -53,6 +53,9 @@ function navigate(page, el = null) {
   if (page === "membership") {
     loadAdminPlans();
   }
+   if (page === "diet") {
+    loadDiet("all");   // ← ADD THIS
+  }
 
   if (page === 'receipts') loadReceipts(1);
 
