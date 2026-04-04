@@ -454,7 +454,7 @@ async function loadAdminPlans() {
         <button onclick="togglePlan(${plan.id}, ${plan.is_active})">
           ${plan.is_active ? '⛔ Deactivate' : '✅ Activate'}
         </button>
-        <button onclick="deletePlan(${plan.id})">🗑 Delete</button>
+        
       </div>
     `;
 
