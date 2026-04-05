@@ -53,8 +53,9 @@ function navigate(page, el = null) {
     loadAdminPlans();
   }
   if (page === "diet") {
-    loadDiet("all");
-  }
+  initWeeklyDietBuilder();
+  loadDiet("all");
+}
   if (page === "receipts") loadReceipts(1);
   if (page === "gym-plans") loadGymPlans();
 }
@@ -2088,11 +2089,190 @@ async function deleteDietPlan(id, userId) {
     loadDiet(userId || "all");
   } else {
     showToast("Delete failed", "error");
+  }}
+  // ─────────────────────────────────────────────
+//  WEEKLY DIET PLAN — 7-day builder
+// ─────────────────────────────────────────────
+
+const WEEK_DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+let activeDietDay = "Monday";
+let dietSlotCounters = {};   // { "Monday": 0, "Tuesday": 0, … }
+
+function initWeeklyDietBuilder() {
+  const tabsEl   = document.getElementById("dietDayTabs");
+  const panelsEl = document.getElementById("dietDayPanels");
+  if (!tabsEl || !panelsEl) return;
+
+  tabsEl.innerHTML   = "";
+  panelsEl.innerHTML = "";
+  dietSlotCounters   = {};
+
+  WEEK_DAYS.forEach((day, i) => {
+    dietSlotCounters[day] = 0;
+
+    // Tab button
+    const btn = document.createElement("button");
+    btn.id        = `diet-tab-${day}`;
+    btn.textContent = day.slice(0,3);   // Mon, Tue, …
+    btn.style.cssText = `
+      padding:8px 14px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:${i === 0 ? "rgba(232,40,26,.14)" : "#151515"};
+      color:${i === 0 ? "#fff" : "var(--muted)"};
+      border-color:${i === 0 ? "rgba(232,40,26,.38)" : "var(--border)"};
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s;
+    `;
+    btn.onclick = () => switchDietDay(day);
+    tabsEl.appendChild(btn);
+
+    // Panel
+    const panel = document.createElement("div");
+    panel.id = `diet-panel-${day}`;
+    panel.style.display = i === 0 ? "block" : "none";
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:14px;font-weight:700;color:#ccc">🍽 ${day} — Meal Slots</span>
+        <button class="tc-btn" onclick="addDietSlot('${day}')">+ Add Slot</button>
+      </div>
+      <div id="diet-slots-${day}"></div>
+    `;
+    panelsEl.appendChild(panel);
+  });
+
+  activeDietDay = "Monday";
+}
+
+function switchDietDay(day) {
+  WEEK_DAYS.forEach(d => {
+    const tab   = document.getElementById(`diet-tab-${d}`);
+    const panel = document.getElementById(`diet-panel-${d}`);
+    const isActive = d === day;
+    if (tab) {
+      tab.style.background   = isActive ? "rgba(232,40,26,.14)" : "#151515";
+      tab.style.color        = isActive ? "#fff" : "var(--muted)";
+      tab.style.borderColor  = isActive ? "rgba(232,40,26,.38)" : "var(--border)";
+    }
+    if (panel) panel.style.display = isActive ? "block" : "none";
+  });
+  activeDietDay = day;
+}
+
+function addDietSlot(day) {
+  dietSlotCounters[day] = (dietSlotCounters[day] || 0) + 1;
+  const id = dietSlotCounters[day];
+  const container = document.getElementById(`diet-slots-${day}`);
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.id = `diet-slot-${day}-${id}`;
+  row.style.cssText = `
+    display:grid;
+    grid-template-columns:110px 1fr 1fr 90px 1fr auto;
+    gap:8px;
+    align-items:end;
+    margin-bottom:10px;
+    padding:10px;
+    border:1px solid #2b2b2b;
+    border-radius:10px;
+    background:#151515;
+  `;
+  row.innerHTML = `
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Time</label>
+      <input class="slot-time" type="text" placeholder="8:00 AM"
+        style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px"/>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Label</label>
+      <input class="slot-label" type="text" placeholder="Breakfast"
+        style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px"/>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Food</label>
+      <input class="slot-food" type="text" placeholder="Oats + banana"
+        style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px"/>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Calories</label>
+      <input class="slot-calories" type="number" placeholder="350"
+        style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px"/>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Notes</label>
+      <input class="slot-notes" type="text" placeholder="optional"
+        style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px"/>
+    </div>
+    <button onclick="document.getElementById('diet-slot-${day}-${id}').remove()"
+      style="padding:8px 10px;background:rgba(232,40,26,.15);border:1px solid rgba(232,40,26,.3);color:#f87171;border-radius:8px;cursor:pointer;font-size:14px;height:36px;align-self:end">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+function collectDaySlots(day) {
+  const container = document.getElementById(`diet-slots-${day}`);
+  if (!container) return [];
+  const slots = [];
+  container.querySelectorAll("div[id^='diet-slot-']").forEach(row => {
+    const time     = row.querySelector(".slot-time")?.value?.trim()     || "";
+    const label    = row.querySelector(".slot-label")?.value?.trim()    || "";
+    const food     = row.querySelector(".slot-food")?.value?.trim()     || "";
+    const calories = row.querySelector(".slot-calories")?.value?.trim() || "";
+    const notes    = row.querySelector(".slot-notes")?.value?.trim()    || "";
+    if (time && label && food) {
+      slots.push({
+        time,
+        label,
+        food_name: food,
+        calories: calories ? Number(calories) : null,
+        notes: notes || null,
+      });
+    }
+  });
+  return slots;
+}
+
+async function submitWeeklyDietPlan() {
+  const userId = document.getElementById("dietUserId")?.value?.trim();
+  if (!userId) return showToast("Please search and select a member", "error");
+
+  // Collect only days that have at least one slot
+  const daysToSubmit = WEEK_DAYS.filter(day => collectDaySlots(day).length > 0);
+
+  if (!daysToSubmit.length) return showToast("Add at least one meal slot to any day", "error");
+
+  let successCount = 0;
+  let failCount    = 0;
+
+  for (const day of daysToSubmit) {
+    const slots = collectDaySlots(day);
+    const res   = await API.post("/diet", {
+      user_id: Number(userId),
+      day,
+      slots,
+    });
+    if (res?.ok) successCount++;
+    else failCount++;
+  }
+
+  if (successCount > 0) {
+    showToast(`✅ ${successCount} day(s) saved successfully${failCount ? `, ${failCount} failed` : ""}`, "success");
+
+    // Reset
+    document.getElementById("dietUserSearch").value     = "";
+    document.getElementById("dietUserId").value         = "";
+    document.getElementById("dietUserResult").innerHTML = "";
+    initWeeklyDietBuilder();
+
+    loadDiet("all");
+  } else {
+    showToast("Failed to save diet plan", "error");
   }
 }
-// ═════════════════════════════════════════════
-//  GYM PLANS MODULE
-// ═════════════════════════════════════════════
+
 
 // ═════════════════════════════════════════════
 //  GYM PLANS MODULE
