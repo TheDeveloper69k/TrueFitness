@@ -56,6 +56,7 @@ function navigate(page, el = null) {
     loadDiet("all");
   }
   if (page === "receipts") loadReceipts(1);
+  if (page === "notifications") initNotifications();
 }
 
 function toggleSidebar() {
@@ -1847,13 +1848,17 @@ window.deleteNotifConfirm = deleteNotifConfirm;
 //  Diet — Add (Admin)
 // ─────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+//  Diet — Add (Admin)
+// ─────────────────────────────────────────────
+
 async function searchUserForDiet(value) {
   const resultBox = document.getElementById("dietUserResult");
-  const hiddenId = document.getElementById("dietUserId");
+  const hiddenId  = document.getElementById("dietUserId");
 
   if (!value || value.length < 3) {
     if (resultBox) resultBox.innerHTML = "";
-    if (hiddenId) hiddenId.value = "";
+    if (hiddenId)  hiddenId.value = "";
     return;
   }
 
@@ -1863,7 +1868,7 @@ async function searchUserForDiet(value) {
 
   if (!res?.ok || !res.data?.data) {
     if (resultBox) resultBox.innerHTML = `<div style="padding:8px;color:#f87171;font-size:12px">User not found</div>`;
-    if (hiddenId) hiddenId.value = "";
+    if (hiddenId)  hiddenId.value = "";
     return;
   }
 
@@ -1878,177 +1883,212 @@ async function searchUserForDiet(value) {
   `;
 }
 
-async function addDietPlan() {
-  const userId = document.getElementById("dietUserId")?.value;
-  const mealType = document.getElementById("mealType")?.value;
-  const food = document.getElementById("foodName")?.value;
-  const calories = document.getElementById("calories")?.value;
-  const day = document.getElementById("day")?.value;
+// ── Slot row builder ──
 
-  if (!userId || !mealType || !food) {
-    return showToast("Please fill all required fields", "error");
-  }
+let slotCount = 0;
+
+function addSlotRow() {
+  slotCount++;
+  const id = slotCount;
+  const container = document.getElementById("slotsContainer");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.id = `slot-row-${id}`;
+  row.style.cssText = `
+    display:grid;
+    grid-template-columns:110px 1fr 1fr 90px 1fr auto;
+    gap:8px;
+    align-items:end;
+    margin-bottom:10px;
+    padding:10px;
+    border:1px solid #2b2b2b;
+    border-radius:10px;
+    background:#151515;
+  `;
+
+  row.innerHTML = `
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Time</label>
+      <input class="slot-time" type="text" placeholder="8:00 AM" style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px" />
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Label</label>
+      <input class="slot-label" type="text" placeholder="Breakfast" style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px" />
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Food</label>
+      <input class="slot-food" type="text" placeholder="Oats + banana" style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px" />
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Calories</label>
+      <input class="slot-calories" type="number" placeholder="350" style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px" />
+    </div>
+    <div class="form-group" style="margin:0">
+      <label style="font-size:11px;color:#888">Notes (optional)</label>
+      <input class="slot-notes" type="text" placeholder="No sugar" style="width:100%;padding:8px;border-radius:7px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:12px" />
+    </div>
+    <button onclick="removeSlotRow(${id})" style="padding:8px 10px;background:rgba(232,40,26,.15);border:1px solid rgba(232,40,26,.3);color:#f87171;border-radius:8px;cursor:pointer;font-size:14px;height:36px;align-self:end">✕</button>
+  `;
+
+  container.appendChild(row);
+}
+
+function removeSlotRow(id) {
+  document.getElementById(`slot-row-${id}`)?.remove();
+}
+
+function collectSlots() {
+  const rows = document.querySelectorAll("#slotsContainer > div");
+  const slots = [];
+
+  rows.forEach(row => {
+    const time     = row.querySelector(".slot-time")?.value?.trim() || "";
+    const label    = row.querySelector(".slot-label")?.value?.trim() || "";
+    const food     = row.querySelector(".slot-food")?.value?.trim() || "";
+    const calories = row.querySelector(".slot-calories")?.value?.trim() || "";
+    const notes    = row.querySelector(".slot-notes")?.value?.trim() || "";
+
+    if (time && label && food) {
+      slots.push({
+        time,
+        label,
+        food_name: food,
+        calories: calories ? Number(calories) : null,
+        notes: notes || null,
+      });
+    }
+  });
+
+  return slots;
+}
+
+async function submitDietPlan() {
+  const userId = document.getElementById("dietUserId")?.value?.trim();
+  const day    = document.getElementById("dietDay")?.value?.trim();
+  const slots  = collectSlots();
+
+  if (!userId)          return showToast("Please search and select a member", "error");
+  if (!day)             return showToast("Day is required (e.g. Monday)", "error");
+  if (slots.length < 1) return showToast("Add at least one meal slot", "error");
 
   const res = await API.post("/diet", {
     user_id: Number(userId),
-    meal_type: mealType,
-    food_name: food,
-    calories,
-    day
+    day,
+    slots,
   });
 
   if (res?.ok) {
-    showToast("Diet added successfully", "success");
+    showToast("Diet plan saved successfully ✅", "success");
 
+    // Reset form
+    document.getElementById("dietUserSearch").value = "";
     document.getElementById("dietUserId").value = "";
-    document.getElementById("mealType").value = "";
-    document.getElementById("foodName").value = "";
-    document.getElementById("calories").value = "";
-    document.getElementById("day").value = "";
+    document.getElementById("dietUserResult").innerHTML = "";
+    document.getElementById("dietDay").value = "";
+    document.getElementById("slotsContainer").innerHTML = "";
+    slotCount = 0;
 
-    loadDiet(userId);
+    loadDiet("all");
   } else {
-    showToast(res?.data?.error || "Failed to add diet", "error");
+    showToast(res?.data?.error || "Failed to save diet plan", "error");
   }
 }
+
+// ── Load & Render Diet Plans ──
 
 async function loadDiet(userId = null) {
   const list = document.getElementById("adminDietList");
   if (!list) return;
 
-  list.innerHTML = "<p style='color:gray'>Loading...</p>";
+  list.innerHTML = "<p style='color:gray;padding:12px'>Loading...</p>";
 
-  if (!userId) {
-    userId = document.getElementById("dietUserId")?.value;
-  }
+  if (!userId) userId = document.getElementById("dietUserId")?.value || "all";
 
   let res;
-
   try {
-    if (userId === "all") {
-      res = await API.get("/diet");
-    } else {
-      res = await API.get(`/diet/${userId}`);
-    }
+    res = userId === "all"
+      ? await API.get("/diet")
+      : await API.get(`/diet/${userId}`);
 
-    if (!res || !res.ok) {
-      list.innerHTML = "<p style='color:red'>Failed to load diet</p>";
+    if (!res?.ok) {
+      list.innerHTML = "<p style='color:#f87171;padding:12px'>Failed to load diet plans</p>";
       return;
     }
 
     const data = res.data?.data || [];
 
-    if (data.length === 0) {
-      list.innerHTML = "<p style='color:gray'>No diet found</p>";
+    if (!data.length) {
+      list.innerHTML = "<p style='color:gray;padding:12px'>No diet plans found</p>";
       return;
     }
 
-    list.innerHTML = "";
+    list.innerHTML = data.map(plan => {
+      const name  = escapeHtml(plan.users?.name || "Unknown");
+      const phone = escapeHtml(plan.users?.phone || "—");
+      const day   = escapeHtml(plan.day || "—");
+      const slots = Array.isArray(plan.slots) ? plan.slots : [];
 
-    data.forEach(item => {
-  list.innerHTML += `
-    <div style="padding:12px;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <div style="width:34px;height:34px;border-radius:50%;background:rgba(232,40,26,.16);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">
-            ${(item.users?.name || item.full_name || "?").charAt(0).toUpperCase()}
+      const slotsHtml = slots.length
+        ? slots.map(s => `
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 10px;border-radius:8px;background:#1a1a1a;margin-bottom:6px">
+              <div style="min-width:72px;font-size:11px;color:#fbbf24;font-weight:700;padding-top:2px">${escapeHtml(s.time || "—")}</div>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700;color:#fff">${escapeHtml(s.label || "—")}</div>
+                <div style="font-size:12px;color:#ccc;margin-top:2px">${escapeHtml(s.food_name || "—")}</div>
+                <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+                  ${s.calories ? `<span style="font-size:11px;color:#4ade80">🔥 ${s.calories} kcal</span>` : ""}
+                  ${s.notes    ? `<span style="font-size:11px;color:#a1a1aa">📝 ${escapeHtml(s.notes)}</span>` : ""}
+                </div>
+              </div>
+            </div>
+          `).join("")
+        : `<p style="font-size:12px;color:#666">No slots added</p>`;
+
+      return `
+        <div style="padding:16px;border-bottom:1px solid #2b2b2b">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:50%;background:rgba(232,40,26,.16);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">
+                ${name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:14px">${name}</div>
+                <div style="font-size:11px;color:var(--muted)">📞 ${phone}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(37,99,235,.15);border:1px solid rgba(37,99,235,.3);color:#93c5fd">
+                📅 ${day}
+              </span>
+              <button onclick="deleteDietPlan('${plan.id}', '${plan.user_id}')"
+                style="background:rgba(232,40,26,.14);border:1px solid rgba(232,40,26,.3);color:#f87171;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">
+                🗑 Delete
+              </button>
+            </div>
           </div>
-          <div>
-            <div style="font-weight:600;font-size:13px">${escapeHtml(item.users?.name || item.full_name || "Unknown")}</div>
-            <div style="font-size:11px;color:var(--muted)">📞 ${escapeHtml(item.users?.phone || item.phone || "—")}</div>
-          </div>
+          ${slotsHtml}
         </div>
-        <div style="font-size:13px"><strong>${escapeHtml(item.meal_type)}</strong> — ${escapeHtml(item.food_name)}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">${item.calories || 0} kcal &nbsp;·&nbsp; ${escapeHtml(item.day || "—")}</div>
-      </div>
-      <button
-        onclick="deleteDiet('${item.id}', ${item.user_id})"
-        style="background:red;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;"
-      >
-        ❌ Delete
-      </button>
-    </div>
-  `;
-});
+      `;
+    }).join("");
 
   } catch (err) {
     console.error("LOAD DIET ERROR:", err);
-    list.innerHTML = "<p style='color:red'>Something went wrong</p>";
+    list.innerHTML = "<p style='color:#f87171;padding:12px'>Something went wrong</p>";
   }
 }
 
-async function deleteDiet(id, userId) {
-  const confirmDelete = confirm("Delete this diet?");
-  if (!confirmDelete) return;
+async function deleteDietPlan(id, userId) {
+  if (!confirm("Delete this diet plan?")) return;
 
   const res = await API.delete(`/diet/${id}`);
 
-  if (res.ok) {
-    showToast("Deleted successfully", "success");
-    loadDiet(userId);
+  if (res?.ok) {
+    showToast("Diet plan deleted ✅", "success");
+    loadDiet(userId || "all");
   } else {
     showToast("Delete failed", "error");
   }
-}
-
-// ─────────────────────────────────────────────
-//  TOGGLE PLAN ACTIVE
-// ─────────────────────────────────────────────
-
-async function togglePlan(id, currentStatus) {
-  const res = await API.put(`/plans/${id}`, {
-    is_active: !currentStatus
-  });
-
-  if (res?.ok) {
-    loadAdminPlans();
-  }
-}
-
-// ─────────────────────────────────────────────
-//  EDIT PLAN
-// ─────────────────────────────────────────────
-
-function editPlan(id) {
-  const plans = window.currentPlans || [];
-  const plan = plans.find(p => p.id == id);
-
-  openModal(
-    "Edit Plan",
-    "Update plan details",
-    `
-    <div class="form-group">
-      <label>Name</label>
-      <input id="editName" value="${plan.name}" />
-    </div>
-
-    <div class="form-group">
-      <label>Price</label>
-      <input id="editPrice" type="number" value="${plan.price}" />
-    </div>
-
-    <div class="form-group">
-      <label>Duration</label>
-      <input id="editDuration" type="number" value="${plan.duration_days}" />
-    </div>
-    `,
-    async () => {
-      const name = document.getElementById("editName").value;
-      const price = document.getElementById("editPrice").value;
-      const duration = document.getElementById("editDuration").value;
-
-      const res = await API.put(`/plans/${id}`, {
-        name,
-        price,
-        duration_days: duration
-      });
-
-      if (res?.ok) {
-        loadAdminPlans();
-        closeModal();
-      }
-    }
-  );
 }
 
 // ─────────────────────────────────────────────

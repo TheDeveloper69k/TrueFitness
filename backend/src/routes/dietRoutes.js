@@ -5,14 +5,19 @@ const router = express.Router();
 
 const dietController = require("../controllers/dietController");
 
-// ➕ ADD DIET
-router.post("/", dietController.addDiet);
-// 📥 GET ALL DIETS
-router.get("/", dietController.getAllDiet);
-// 📥 GET USER DIET
-router.get("/:userId", dietController.getUserDiet);
+// ➕ ADD FULL DAY DIET PLAN
+router.post("/", dietController.addDietPlan);
 
-// ❌ DELETE DIET
-router.delete("/:id", dietController.deleteDiet);
+// 📥 GET ALL DIET PLANS
+router.get("/", dietController.getAllDietPlans);
+
+// 📥 GET USER DIET PLANS
+router.get("/:userId", dietController.getUserDietPlans);
+
+// ✏️ UPDATE DIET PLAN
+router.put("/:id", dietController.updateDietPlan);
+
+// ❌ DELETE DIET PLAN
+router.delete("/:id", dietController.deleteDietPlan);
 
 module.exports = router;
