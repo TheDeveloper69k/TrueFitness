@@ -56,7 +56,7 @@ function navigate(page, el = null) {
     loadDiet("all");
   }
   if (page === "receipts") loadReceipts(1);
-  if (page === "notifications") initNotifications();
+  if (page === "gym-plans") loadGymPlans();
 }
 
 function toggleSidebar() {
@@ -2088,6 +2088,315 @@ async function deleteDietPlan(id, userId) {
     loadDiet(userId || "all");
   } else {
     showToast("Delete failed", "error");
+  }
+}
+// ═════════════════════════════════════════════
+//  GYM PLANS MODULE
+// ═════════════════════════════════════════════
+
+// ═════════════════════════════════════════════
+//  GYM PLANS MODULE
+// ═════════════════════════════════════════════
+
+let gymPlanDayCount = 0;
+
+// ── Search member ──
+async function searchUserForGymPlan(value) {
+  const resultBox = document.getElementById("gymPlanUserResult");
+  const hiddenId  = document.getElementById("gymPlanUserId");
+
+  if (!value || value.length < 3) {
+    if (resultBox) resultBox.innerHTML = "";
+    if (hiddenId)  hiddenId.value = "";
+    return;
+  }
+
+  if (resultBox) resultBox.innerHTML = `<div style="padding:8px;color:#aaa;font-size:12px">Searching...</div>`;
+
+  const res = await API.get(`/users/search?phone=${encodeURIComponent(value)}`);
+
+  if (!res?.ok || !res.data?.data) {
+    if (resultBox) resultBox.innerHTML = `<div style="padding:8px;color:#f87171;font-size:12px">User not found</div>`;
+    if (hiddenId)  hiddenId.value = "";
+    return;
+  }
+
+  const user = res.data.data;
+  if (hiddenId) hiddenId.value = user.id;
+
+  if (resultBox) resultBox.innerHTML = `
+    <div style="padding:10px;border:1px solid #2b6a3a;border-radius:6px;background:#0e2318;margin-top:6px">
+      <div style="font-weight:600;font-size:13px;color:#4ade80">✅ ${escapeHtml(user.name || "User")}</div>
+      <div style="font-size:11px;color:#aaa">ID: ${user.id} · Phone: ${escapeHtml(user.phone || "—")}</div>
+    </div>
+  `;
+}
+
+// ── Add a day block ──
+function addGymPlanDay() {
+  gymPlanDayCount++;
+  const id = gymPlanDayCount;
+  const container = document.getElementById("gymPlanDaysContainer");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.id = `gym-day-${id}`;
+  row.style.cssText = `
+    padding:14px;
+    border:1px solid #2b2b2b;
+    border-radius:12px;
+    background:#151515;
+    margin-bottom:12px;
+  `;
+
+  row.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span style="font-size:13px;color:#888;white-space:nowrap">📅 Day Label</span>
+        <input class="gym-day-label" type="text" placeholder="e.g. Monday / Day 1 / Push Day"
+          style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:13px" />
+      </div>
+      <button onclick="removeGymDay(${id})"
+        style="margin-left:12px;padding:7px 12px;background:rgba(232,40,26,.14);border:1px solid rgba(232,40,26,.3);color:#f87171;border-radius:8px;cursor:pointer;font-size:12px;white-space:nowrap">
+        ✕ Remove
+      </button>
+    </div>
+
+    <div class="gym-exercises-container" style="margin-bottom:10px"></div>
+
+    <button onclick="addGymExercise(${id})"
+      style="padding:7px 14px;background:#1a1a1a;border:1px solid #333;color:#aaa;border-radius:8px;cursor:pointer;font-size:12px;transition:.2s"
+      onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'">
+      + Add Exercise
+    </button>
+  `;
+
+  container.appendChild(row);
+}
+
+function removeGymDay(id) {
+  document.getElementById(`gym-day-${id}`)?.remove();
+}
+
+// ── Add exercise row inside a day ──
+function addGymExercise(dayId) {
+  const dayEl = document.getElementById(`gym-day-${dayId}`);
+  if (!dayEl) return;
+
+  const container = dayEl.querySelector(".gym-exercises-container");
+  if (!container) return;
+
+  const ex = document.createElement("div");
+  ex.style.cssText = `
+    display:grid;
+    grid-template-columns:2fr 70px 70px 80px 110px auto;
+    gap:6px;
+    align-items:end;
+    margin-bottom:8px;
+    padding:8px;
+    border-radius:8px;
+    background:#1c1c1c;
+  `;
+
+  ex.innerHTML = `
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:600;text-transform:uppercase">Exercise</div>
+      <input class="ex-name" type="text" placeholder="e.g. Bench Press"
+        style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #2b2b2b;background:#121212;color:#fff;font-size:12px;outline:none" />
+    </div>
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:600;text-transform:uppercase">Sets</div>
+      <input class="ex-sets" type="number" min="1" placeholder="3"
+        style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #2b2b2b;background:#121212;color:#fff;font-size:12px;outline:none" />
+    </div>
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:600;text-transform:uppercase">Reps</div>
+      <input class="ex-reps" type="text" placeholder="10-12"
+        style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #2b2b2b;background:#121212;color:#fff;font-size:12px;outline:none" />
+    </div>
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:600;text-transform:uppercase">Rest</div>
+      <input class="ex-rest" type="text" placeholder="60s"
+        style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #2b2b2b;background:#121212;color:#fff;font-size:12px;outline:none" />
+    </div>
+    <div>
+      <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:600;text-transform:uppercase">Notes</div>
+      <input class="ex-notes" type="text" placeholder="optional"
+        style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #2b2b2b;background:#121212;color:#fff;font-size:12px;outline:none" />
+    </div>
+    <button onclick="this.parentElement.remove()"
+      style="padding:7px 10px;background:rgba(232,40,26,.12);border:1px solid rgba(232,40,26,.22);color:#f87171;border-radius:6px;cursor:pointer;font-size:13px;align-self:end;height:32px">
+      ✕
+    </button>
+  `;
+
+  container.appendChild(ex);
+}
+
+// ── Collect all days data ──
+function collectGymPlanDays() {
+  const dayRows = document.querySelectorAll("#gymPlanDaysContainer > div");
+  const days = {};
+
+  dayRows.forEach(row => {
+    const label = row.querySelector(".gym-day-label")?.value?.trim() || "";
+    if (!label) return;
+
+    const exercises = [];
+    row.querySelectorAll(".gym-exercises-container > div").forEach(ex => {
+      const name  = ex.querySelector(".ex-name")?.value?.trim()  || "";
+      const sets  = ex.querySelector(".ex-sets")?.value?.trim()  || "";
+      const reps  = ex.querySelector(".ex-reps")?.value?.trim()  || "";
+      const rest  = ex.querySelector(".ex-rest")?.value?.trim()  || "";
+      const notes = ex.querySelector(".ex-notes")?.value?.trim() || "";
+      if (name) exercises.push({
+        name,
+        sets:  sets  || null,
+        reps:  reps  || null,
+        rest:  rest  || null,
+        notes: notes || null,
+      });
+    });
+
+    days[label] = exercises;
+  });
+
+  return days;
+}
+
+// ── Submit ──
+async function submitGymPlan() {
+  const userId    = document.getElementById("gymPlanUserId")?.value?.trim();
+  const weekLabel = document.getElementById("gymPlanWeekLabel")?.value?.trim();
+  const days      = collectGymPlanDays();
+
+  if (!userId)                    return showToast("Please search and select a member", "error");
+  if (!Object.keys(days).length)  return showToast("Add at least one day", "error");
+
+  const hasExercise = Object.values(days).some(exArr => exArr.length > 0);
+  if (!hasExercise) return showToast("Add at least one exercise in a day", "error");
+
+  const res = await API.post("/gym-plans", {
+    user_id:    Number(userId),
+    week_label: weekLabel || null,
+    days,
+  });
+
+  if (res?.ok) {
+    showToast("Gym plan saved successfully ✅", "success");
+
+    // Reset form
+    document.getElementById("gymPlanUserSearch").value  = "";
+    document.getElementById("gymPlanUserId").value      = "";
+    document.getElementById("gymPlanUserResult").innerHTML = "";
+    document.getElementById("gymPlanWeekLabel").value   = "";
+    document.getElementById("gymPlanDaysContainer").innerHTML = "";
+    gymPlanDayCount = 0;
+
+    loadGymPlans();
+  } else {
+    showToast(res?.data?.message || "Failed to save gym plan", "error");
+  }
+}
+
+// ── Load & render all gym plans ──
+async function loadGymPlans() {
+  const list = document.getElementById("adminGymPlanList");
+  if (!list) return;
+
+  list.innerHTML = "<p style='color:gray;padding:12px'>Loading...</p>";
+
+  const res = await API.get("/gym-plans");
+
+  if (!res?.ok) {
+    list.innerHTML = "<p style='color:#f87171;padding:12px'>Failed to load gym plans</p>";
+    return;
+  }
+
+  const data = res.data?.data ?? res.data?.data ?? [];
+
+  if (!data.length) {
+    list.innerHTML = "<p style='color:gray;padding:12px'>No gym plans found</p>";
+    return;
+  }
+
+  list.innerHTML = data.map(plan => {
+    const name      = escapeHtml(plan.users?.name  || "Unknown");
+    const phone     = escapeHtml(plan.users?.phone || "—");
+    const weekLabel = escapeHtml(plan.week_label   || "No label");
+    const days      = typeof plan.days === "object" ? plan.days : {};
+    const dayKeys   = Object.keys(days);
+
+    const daysHtml = dayKeys.length
+      ? dayKeys.map(dayKey => {
+          const exercises = Array.isArray(days[dayKey]) ? days[dayKey] : [];
+
+          const exHtml = exercises.length
+            ? `<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+                ${exercises.map(e => `
+                  <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;background:#1a1a1a;flex-wrap:wrap">
+                    <span style="font-size:13px;color:#fff;font-weight:600;min-width:120px">${escapeHtml(e.name || "—")}</span>
+                    ${e.sets  ? `<span style="font-size:11px;color:#93c5fd;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.22);padding:3px 8px;border-radius:999px">${e.sets} sets</span>` : ""}
+                    ${e.reps  ? `<span style="font-size:11px;color:#4ade80;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.22);padding:3px 8px;border-radius:999px">${e.reps} reps</span>` : ""}
+                    ${e.rest  ? `<span style="font-size:11px;color:#fbbf24;background:rgba(217,119,6,.12);border:1px solid rgba(217,119,6,.22);padding:3px 8px;border-radius:999px">⏱ ${e.rest}</span>` : ""}
+                    ${e.notes ? `<span style="font-size:11px;color:#a1a1aa">📝 ${escapeHtml(e.notes)}</span>` : ""}
+                  </div>
+                `).join("")}
+              </div>`
+            : `<p style="font-size:12px;color:#555;margin-top:6px">No exercises</p>`;
+
+          return `
+            <div style="margin-bottom:12px">
+              <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+                📅 ${escapeHtml(dayKey)}
+                <span style="font-size:11px;color:#555;font-weight:400">(${exercises.length} exercise${exercises.length !== 1 ? "s" : ""})</span>
+              </div>
+              ${exHtml}
+            </div>
+          `;
+        }).join("")
+      : `<p style="font-size:12px;color:#555">No days added</p>`;
+
+    return `
+      <div style="padding:16px;border-bottom:1px solid #2b2b2b">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:38px;height:38px;border-radius:50%;background:rgba(232,40,26,.16);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">
+              ${name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:14px">${name}</div>
+              <div style="font-size:11px;color:var(--muted)">📞 ${phone}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.28);color:#c4b5fd">
+              🗓 ${weekLabel}
+            </span>
+            <span style="font-size:11px;color:#666">${dayKeys.length} day${dayKeys.length !== 1 ? "s" : ""}</span>
+            <button onclick="deleteGymPlan('${plan.id}')"
+              style="background:rgba(232,40,26,.14);border:1px solid rgba(232,40,26,.3);color:#f87171;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">
+              🗑 Delete
+            </button>
+          </div>
+        </div>
+        ${daysHtml}
+      </div>
+    `;
+  }).join("");
+}
+
+// ── Delete ──
+async function deleteGymPlan(id) {
+  if (!confirm("Delete this gym plan?")) return;
+
+  const res = await API.delete(`/gym-plans/${id}`);
+
+  if (res?.ok) {
+    showToast("Gym plan deleted ✅", "success");
+    loadGymPlans();
+  } else {
+    showToast(res?.data?.message || "Delete failed", "error");
   }
 }
 

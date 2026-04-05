@@ -77,6 +77,7 @@ const whatsappRoutes = require("./routes/whatsappRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const dietRoutes = require("./routes/dietRoutes");
 const receiptsRoutes = require("./routes/receiptRoutes");
+const gymPlanRoutes = require("./routes/gymPlanRoutes");
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
@@ -90,6 +91,7 @@ app.use("/api/v1/whatsapp", whatsappRoutes);
 app.use("/api/v1/otp", otpRoutes);
 app.use("/api/v1/diet", dietRoutes);
 app.use("/api/v1/receipts", receiptsRoutes);
+app.use("/api/v1/gym-plans", gymPlanRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────
 app.use((req, res) => {

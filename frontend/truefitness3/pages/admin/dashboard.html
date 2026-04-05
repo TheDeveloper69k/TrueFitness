@@ -970,6 +970,7 @@
       <div class="nav-item" onclick="navigate('notifications',this)"><span
           class="ni">🔔</span><span>Notifications</span></div>
       <div class="nav-item" onclick="navigate('diet',this)"><span class="ni">🍴</span><span>Diet Plans</span></div>
+      <div class="nav-item" onclick="navigate('gym-plans',this)"><span class="ni">💪</span><span>Gym Plans</span></div>
       <div class="nav-item" onclick="navigate('receipts',this)"><span class="ni">📄</span><span>Receipts</span></div>
 
       <!--
@@ -1303,71 +1304,153 @@
       </div>
 
       <!-- DIET -->
-      <!-- DIET -->
-<div class="page" id="page-diet">
+      <div class="page" id="page-diet">
+        <div class="page-header">
+          <h1>Diet Plans</h1>
+          <p>Diet plans section</p>
+        </div>
+
+        <!-- ADD DIET FORM -->
+        <div class="table-card">
+          <div class="tc-header">
+            <div>
+              <h3>Add Diet Plan</h3>
+              <p>Assign diet to a user</p>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+            <div class="form-group">
+              <label>User</label>
+
+              <input id="dietUserSearch" placeholder="Search user by phone"
+                oninput="searchUserForDiet(this.value)" />
+
+              <input type="hidden" id="dietUserId" />
+
+              <div id="dietUserResult"
+                style="background:#111;border:1px solid #333;border-radius:6px;max-height:200px;overflow-y:auto;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Meal Type</label>
+              <select id="mealType">
+                <option value="">Select</option>
+                <option>Breakfast</option>
+                <option>Lunch</option>
+                <option>Dinner</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Food Name</label>
+              <input id="foodName" type="text" placeholder="e.g. Oats + Banana" />
+            </div>
+
+            <div class="form-group">
+              <label>Calories</label>
+              <input id="calories" type="text" placeholder="e.g. 350 kcal" />
+            </div>
+
+            <div class="form-group">
+              <label>Day</label>
+              <input id="day" type="text" placeholder="Mon / Tue / Wed" />
+            </div>
+
+          </div>
+
+          <!-- ADD BUTTON -->
+          <div style="margin-top:16px">
+            <button class="action-btn primary" onclick="addDietPlan()">➕ Add Diet</button>
+          </div>
+        </div>
+
+        <!-- SHOW ADDED DIETS -->
+        <div class="table-card" style="margin-top:20px">
+          <div class="tc-header">
+            <div>
+              <h3>Assigned Diet Plans</h3>
+              <p>All diets given by admin</p>
+            </div>
+          </div>
+
+          <div id="adminDietList">
+            <p style="color:gray">No diet added yet</p>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- GYM PLANS -->
+
+
+<!-- GYM PLANS -->
+<div class="page" id="page-gym-plans">
   <div class="page-header">
-    <h1>Diet Plans</h1>
-    <p>Assign full day custom diet plans to members</p>
+    <h1>Gym Plans</h1>
+    <p>Assign fully custom workout plans to members</p>
   </div>
 
-  <!-- ADD DIET FORM -->
+  <!-- ADD GYM PLAN FORM -->
   <div class="table-card">
     <div class="tc-header">
       <div>
-        <h3>Add Diet Plan</h3>
-        <p>Search member → add day → fill each meal slot</p>
+        <h3>Create Gym Plan</h3>
+        <p>Search member → set week → add days → add exercises</p>
       </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
 
-      <!-- User Search -->
+      <!-- Member Search -->
       <div class="form-group" style="grid-column:1/-1">
         <label>Search Member (by Phone)</label>
-        <input id="dietUserSearch" placeholder="e.g. 9876543210" oninput="searchUserForDiet(this.value)" />
-        <input type="hidden" id="dietUserId" />
-        <div id="dietUserResult"></div>
+        <input id="gymPlanUserSearch" placeholder="e.g. 9876543210"
+          oninput="searchUserForGymPlan(this.value)" />
+        <input type="hidden" id="gymPlanUserId" />
+        <div id="gymPlanUserResult"></div>
       </div>
 
-      <!-- Day -->
+      <!-- Week Label -->
       <div class="form-group">
-        <label>Day</label>
-        <input id="dietDay" type="text" placeholder="e.g. Monday / Tuesday" />
+        <label>Week Label (optional)</label>
+        <input id="gymPlanWeekLabel" type="text" placeholder="e.g. Week 1 / Beginner Phase" />
       </div>
 
     </div>
 
-    <!-- Slots Builder -->
+    <!-- Days Builder -->
     <div style="margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <label style="font-size:13px;font-weight:600;color:#ccc">🕐 Meal Slots</label>
-        <button class="tc-btn" onclick="addSlotRow()">+ Add Slot</button>
+        <label style="font-size:13px;font-weight:600;color:#ccc">📅 Days & Exercises</label>
+        <button class="tc-btn" onclick="addGymPlanDay()">+ Add Day</button>
       </div>
-
-      <div id="slotsContainer">
-        <!-- Slot rows injected here -->
-      </div>
+      <div id="gymPlanDaysContainer"></div>
     </div>
 
     <div style="margin-top:16px">
-      <button class="action-btn primary" onclick="submitDietPlan()">➕ Save Diet Plan</button>
+      <button class="action-btn primary" onclick="submitGymPlan()">💾 Save Gym Plan</button>
     </div>
   </div>
 
-  <!-- ASSIGNED DIET LIST -->
+  <!-- ASSIGNED GYM PLANS LIST -->
   <div class="table-card" style="margin-top:20px">
     <div class="tc-header">
       <div>
-        <h3>Assigned Diet Plans</h3>
-        <p>All diet plans assigned by admin</p>
+        <h3>Assigned Gym Plans</h3>
+        <p>All gym plans assigned by admin</p>
       </div>
-      <button class="action-btn" onclick="loadDiet('all')" style="font-size:12px;padding:8px 12px">🔄 Refresh</button>
+      <button class="action-btn" onclick="loadGymPlans()" style="font-size:12px;padding:8px 12px">🔄 Refresh</button>
     </div>
-    <div id="adminDietList">
-      <p style="color:gray;padding:12px">No diet plans yet</p>
+    <div id="adminGymPlanList">
+      <p style="color:gray;padding:12px">No gym plans yet</p>
     </div>
   </div>
 </div>
+
       <!-- RECEIPTS -->
       <div class="page" id="page-receipts">
         <div class="page-header">
