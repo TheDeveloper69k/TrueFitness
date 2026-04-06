@@ -1,0 +1,21 @@
+{
+  "name": "truefitness",
+  "version": "1.0.0",
+  "description": "Making A Real Time GYM-Based",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheDeveloper69k/TrueFitness.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TheDeveloper69k/TrueFitness/issues"
+  },
+  "homepage": "https://github.com/TheDeveloper69k/TrueFitness#readme"
+}
