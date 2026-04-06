@@ -171,8 +171,8 @@ function renderWorkouts() {
     </div>`).join('');
 }
 
-function addExercise() {
-  const day  = document.getElementById('exDay').value;
+// function addExercise() {
+  // const day  = document.getElementById('exDay').value;
   const name = document.getElementById('exName').value.trim();
   const dur  = document.getElementById('exDur').value.trim();
   if (!day || !name) { showToast('Please select a day and enter exercise name'); return; }
@@ -182,7 +182,7 @@ function addExercise() {
   document.getElementById('exName').value = '';
   document.getElementById('exDur').value  = '';
   showToast('Exercise added!', 'success');
-}
+// }
 
 function deleteWorkout(i) {
   workouts.splice(i, 1);
@@ -190,6 +190,35 @@ function deleteWorkout(i) {
   showToast('Exercise removed', 'success');
 }
 
+let workout = [];
+
+async function loadGymPlans() {
+  const res = await API.get("/gym-plans?user_id=123");
+
+  if (res?.ok) {
+    console.log("API DATA:", res.data);
+
+    const plans = res.data.data || res.data;
+
+    workouts = [];
+
+    plans.forEach(plan => {
+      const days = plan.days || {};
+
+      Object.keys(days).forEach(day => {
+        days[day].forEach(ex => {
+          workouts.push({
+            day: day,
+            name: ex.name,
+            dur: ex.reps || ex.sets || "-"
+          });
+        });
+      });
+    });
+
+    renderWorkouts();
+  }
+}
 // ─────────────────────────────────────────────
 // RENDER CLASSES
 // ─────────────────────────────────────────────
