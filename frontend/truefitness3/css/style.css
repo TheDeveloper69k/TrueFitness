@@ -162,7 +162,7 @@ button { cursor: pointer; font-family: var(--font); }
 }
 
 .logo-img {
-  height: 70px;             /* 🔥 make logo bigger */
+  height: 50px;             /* 🔥 make logo bigger */
   width: auto;
   object-fit: contain;
 }
