@@ -389,6 +389,16 @@ exports.getUserMembership = async (req, res) => {
   try {
     const { userId } = req.params;
 
+    console.log("req.user:", req.user);
+    console.log("params userId:", userId);
+
+    if (req.user.role !== "admin" && Number(req.user.id) !== Number(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
     const { data, error } = await supabase
       .from("user_memberships")
       .select("*")
@@ -415,7 +425,6 @@ exports.getUserMembership = async (req, res) => {
     });
   }
 };
-
 // Admin: update membership status
 exports.updateMembershipStatus = async (req, res) => {
   try {

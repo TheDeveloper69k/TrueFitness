@@ -256,31 +256,20 @@
         </select>
         <input type="text" id="exName" placeholder="Exercise"/>
         <input type="text" id="exDur"  placeholder="Duration"/>
-        <!-- FIX: was disabled="addExercise()" -->
         <button class="add-btn" onclick="addExercise()">+ Add Exercise</button>
       </div>
     </div>
 
   </div>
 
-  <!-- ROW 3: DIET PLAN + CLASSES -->
-  <div class="two-col">
-
-    <!-- DIET PLAN CARD -->
-    <div class="section-card">
-      <div class="sc-header"><span class="sc-icon">🥗</span><h3>Diet Plan</h3></div>
-      <div class="sc-body">
-        <div class="diet-tabs" id="dietTabs"></div>
-        <div id="dietSlots"></div>
-      </div>
-      <div class="diet-total"><span>Total Calories</span><strong id="totalCals">— kcal</strong></div>
+  <!-- ROW 3: DIET PLAN (full width) -->
+  <div class="section-card">
+    <div class="sc-header"><span class="sc-icon">🥗</span><h3>Diet Plan</h3></div>
+    <div class="sc-body">
+      <div class="diet-tabs" id="dietTabs"></div>
+      <div id="dietSlots"></div>
     </div>
-
-    <!-- TODAY'S CLASSES -->
-    <div class="section-card">
-      <div class="sc-header"><span class="sc-icon">📅</span><h3>Today's Classes</h3></div>
-      <div class="sc-body" id="classesList"></div>
-    </div>
+    <div class="diet-total"><span>Total Calories</span><strong id="totalCals">— kcal</strong></div>
   </div>
 
 </main>

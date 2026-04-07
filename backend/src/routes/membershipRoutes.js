@@ -29,7 +29,7 @@ router.get("/me/history", protect, getMyMembershipHistory);
 // Admin
 router.get("/stats", protect, adminOnly, getMembershipStats);
 router.get("/", protect, adminOnly, getAllMemberships);
-router.get("/user/:userId", protect, adminOnly, getUserMembership);
+router.get("/user/:userId", protect,getUserMembership);
 router.post("/assign", protect, adminOnly, writeLimiter, assignMembership);
 router.patch("/:id/status", protect, adminOnly, writeLimiter, updateMembershipStatus);
 router.patch("/:id/renew", protect, adminOnly, writeLimiter, renewMembership);

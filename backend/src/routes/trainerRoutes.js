@@ -25,7 +25,8 @@ const writeLimiter = rateLimit({
 });
 
 router.get("/admin/stats/summary", protect, adminOnly, getTrainerStats);
-router.get("/member/:memberId", protect, adminOnly, getMemberTrainer);
+router.get("/user/:userId", protect, getMemberTrainer);
+router.get("/member/:memberId", protect, getMemberTrainer);
 router.delete("/member/:memberId/remove", protect, adminOnly, writeLimiter, removeTrainerFromMember);
 router.post("/assign-member", protect, adminOnly, writeLimiter, assignTrainerToMember);
 router.get("/:trainerId/members", protect, adminOnly, getTrainerMembers);

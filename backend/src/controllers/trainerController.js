@@ -478,10 +478,18 @@ const assignTrainerToMember = async (req, res) => {
 // GET MEMBER'S TRAINER
 const getMemberTrainer = async (req, res) => {
   try {
-    const { memberId } = req.params;
+    const memberId = req.params.memberId || req.params.userId;
 
     if (!isValidId(memberId)) {
       return res.status(400).json({ success: false, message: "Invalid member id" });
+    }
+
+    // SECURITY
+    if (req.user.role !== "admin" && Number(req.user.id) !== Number(memberId)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
     }
 
     const { data, error } = await supabase
@@ -505,17 +513,14 @@ const getMemberTrainer = async (req, res) => {
       .maybeSingle();
 
     if (error) {
-      console.error("[GetMemberTrainer] Error:", error);
       return res.status(500).json({ success: false, message: "Failed to fetch member trainer" });
     }
 
-    if (!data) {
-      return res.status(404).json({ success: false, message: "No trainer assigned to this member" });
-    }
-
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({
+      success: true,
+      data: data ? data.trainers : null,
+    });
   } catch (err) {
-    console.error("[GetMemberTrainer] Unexpected error:", err);
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

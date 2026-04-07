@@ -15,19 +15,6 @@ let workouts = [
   { day: 'Thu', name: 'Legs & Shoulders', dur: '75 min' },
 ];
 
-const classes = [
-  { name: 'HIIT Training',       trainer: 'Mike Thompson',  time: '6:00 PM – 7:00 PM', spots: '12/15', status: 'live',     statusLabel: 'In Progress' },
-  { name: 'Yoga & Flexibility',  trainer: 'Emma Davis',     time: '7:30 PM – 8:30 PM', spots: '8/12',  status: 'upcoming', statusLabel: 'Upcoming'    },
-  { name: 'Strength Training',   trainer: 'Sarah Johnson',  time: '6:00 AM – 7:00 AM', spots: '5/10',  status: 'tomorrow', statusLabel: 'Tomorrow'    },
-];
-
-const goals = [
-  { name: 'Workouts Completed', current: 4,    target: 5,    unit: 'sessions'  },
-  { name: 'Calories Burned',    current: 1800, target: 2500, unit: 'kcal'      },
-  { name: 'Water Intake',       current: 6,    target: 8,    unit: 'glasses'   },
-  { name: 'Sleep Hours',        current: 7,    target: 8,    unit: 'hrs/night' },
-];
-
 const notifs = [
   { icon: '🔴', cls: 'red', title: 'Membership Reminder', msg: 'Your premium membership expires in 45 days', time: '2 hours ago', alert: true },
   { icon: '🔔', cls: '',    title: 'New Class Added',      msg: 'HIIT training class now available on weekends', time: '1 day ago' },
@@ -40,8 +27,6 @@ const offers = [
   { icon: '👥', featured: false, name: 'Refer & Earn',                  desc: 'Get 1 month free membership for every friend you refer',         tag: 'Ongoing offer' },
 ];
 
-// Diet data stored per day for tab switching
-// FIX: was declared twice (once as a function-scoped const inside loadDiet, once here)
 let dietData = [];
 
 // ─────────────────────────────────────────────
@@ -74,8 +59,6 @@ async function init() {
   await loadGymPlan();
 
   renderWorkouts();
-  renderClasses();
-  // FIX: await so notifications load in sequence with the rest of the page
   await renderNotifs();
   renderOffers();
 }
@@ -86,49 +69,71 @@ async function init() {
 
 async function loadMembership() {
   if (!currentUser) return;
-  const res = await API.get(`/gym/members/${currentUser.id}`);
-  if (res && res.ok && res.data) {
-    const m = res.data;
 
-    // Plan type
-    const planVal = m.membership_plan || m.plan_type || 'Premium';
-    document.getElementById('planType').textContent    = planVal;
-    document.getElementById('profilePlanType').textContent = planVal;
+  try {
+    const res = await API.get(`/memberships/me`);
+    console.log("Membership API response:", res);
 
-    // Member since
-    if (m.joined_at || m.created_at) {
-      const d     = new Date(m.joined_at || m.created_at);
-      const label = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-      document.getElementById('memberSince').textContent  = label;
-      document.getElementById('profileSince').textContent = label;
+    if (!res || !res.ok) {
+      console.error("Membership API failed:", res);
+      return;
     }
 
-    // Renewal / expiry
-    if (m.expiry_date || m.renewal_date) {
-      const exp      = new Date(m.expiry_date || m.renewal_date);
+    const m = res.data?.data || res.data || null;
+    if (!m) {
+      console.warn("No membership found");
+      return;
+    }
+
+    const planVal =
+      m.membership_plan ||
+      m.plan_type ||
+      m.plan_name ||
+      m.monthly_plan ||
+      "Premium";
+
+    document.getElementById("planType").textContent = planVal;
+    document.getElementById("profilePlanType").textContent = planVal;
+
+    const joinDate = m.joined_at || m.created_at || m.start_date;
+    if (joinDate) {
+      const d = new Date(joinDate);
+      const label = d.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+      document.getElementById("memberSince").textContent = label;
+      document.getElementById("profileSince").textContent = label;
+    }
+
+    const expiryDate = m.expiry_date || m.renewal_date || m.end_date;
+    if (expiryDate) {
+      const exp = new Date(expiryDate);
       const daysLeft = Math.max(0, Math.ceil((exp - Date.now()) / 86400000));
-      document.getElementById('renewalDate').textContent = exp.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-      document.getElementById('daysLeft').textContent    = daysLeft + ' Days';
 
-      const pct = Math.max(5, Math.round((daysLeft / 365) * 100));
-      document.getElementById('membershipProgress').style.width = pct + '%';
+      document.getElementById("renewalDate").textContent = exp.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
 
-      // Show warning if ≤ 30 days left
+      document.getElementById("daysLeft").textContent = `${daysLeft} Days`;
+
+      const pct = Math.max(5, Math.min(100, Math.round((daysLeft / 365) * 100)));
+      document.getElementById("membershipProgress").style.width = pct + "%";
+
       if (daysLeft <= 30) {
-        document.getElementById('expiryWarn').classList.add('show');
+        document.getElementById("expiryWarn").classList.add("show");
       }
     }
 
-    // Expired badge
-    if (m.membership_status === 'expired') {
-      const badge = document.getElementById('membershipBadge');
-      badge.textContent      = 'Expired';
-      badge.style.background = 'rgba(232,40,26,0.15)';
-      badge.style.color      = '#f87171';
+    if (m.membership_status === "expired" || m.status === "expired") {
+      const badge = document.getElementById("membershipBadge");
+      badge.textContent = "Expired";
+      badge.style.background = "rgba(232,40,26,0.15)";
+      badge.style.color = "#f87171";
     }
+  } catch (err) {
+    console.error("loadMembership error:", err);
   }
 }
-
 // ─────────────────────────────────────────────
 // LOAD TRAINER
 // ─────────────────────────────────────────────
@@ -136,50 +141,54 @@ async function loadMembership() {
 async function loadTrainer() {
   if (!currentUser) return;
 
-  // Try dedicated trainer endpoint first
-  let trainer = null;
-  const res = await API.get(`/trainers/my-trainer`);
-  if (res && res.ok && res.data) {
-    trainer = res.data.data || res.data;
-  }
+  try {
+    const res = await API.get(`/trainers/user/${currentUser.id}`);
+    console.log("Trainer API response:", res);
 
-  // Fall back to membership data embedded trainer fields
-  if (!trainer) {
-    const mRes = await API.get(`/gym/members/${currentUser.id}`);
-    if (mRes && mRes.ok && mRes.data && mRes.data.trainer_name) {
-      trainer = {
-        name:              mRes.data.trainer_name,
-        specialization:    mRes.data.trainer_spec  || 'Strength & Conditioning',
-        experience:        mRes.data.trainer_exp   || '—',
-        phone:             mRes.data.trainer_phone || '—',
-        sessions_per_week: mRes.data.sessions      || '—',
-      };
+    if (!res || !res.ok) {
+      console.error("Trainer API failed:", res);
+      return;
     }
-  }
 
-  if (trainer) {
-    const tName = trainer.name || 'Not Assigned';
-    document.getElementById('trainerInitial').textContent = tName[0]?.toUpperCase() || '?';
-    document.getElementById('trainerName').textContent    = tName;
-    document.getElementById('trainerSpec').textContent    = trainer.specialization || '—';
-    document.getElementById('trainerExp').textContent     = trainer.experience
-      ? trainer.experience + (String(trainer.experience).includes('year') ? '' : ' years experience')
-      : '—';
-    document.getElementById('trainerSpecInfo').textContent = trainer.specialization || '—';
-    document.getElementById('trainerExpInfo').textContent  = trainer.experience
-      ? trainer.experience + (String(trainer.experience).includes('year') ? '' : ' yrs')
-      : '—';
-    document.getElementById('trainerSessions').textContent = trainer.sessions_per_week
-      ? trainer.sessions_per_week + '/week'
-      : '—';
-    document.getElementById('trainerPhone').textContent    = trainer.phone || '—';
+    const raw = res.data?.data || res.data;
+    const trainer = Array.isArray(raw) ? raw[0] : raw;
+
+    if (!trainer) {
+      console.warn("No trainer assigned");
+      return;
+    }
+
+    const tName =
+      trainer.name ||
+      trainer.full_name ||
+      trainer.trainer_name ||
+      "Not Assigned";
+
+    document.getElementById("trainerInitial").textContent = tName[0]?.toUpperCase() || "—";
+    document.getElementById("trainerName").textContent = tName;
+    document.getElementById("trainerSpec").textContent = trainer.specialization || "—";
+    document.getElementById("trainerExp").textContent = trainer.experience
+      ? `${trainer.experience}${String(trainer.experience).includes("year") ? "" : " years experience"}`
+      : "—";
+
+    document.getElementById("trainerSpecInfo").textContent = trainer.specialization || "—";
+    document.getElementById("trainerExpInfo").textContent = trainer.experience
+      ? `${trainer.experience}${String(trainer.experience).includes("year") ? "" : " yrs"}`
+      : "—";
+
+    document.getElementById("trainerSessions").textContent = trainer.sessions_per_week
+      ? `${trainer.sessions_per_week}/week`
+      : "—";
+
+    document.getElementById("trainerPhone").textContent =
+      trainer.phone || trainer.contact || "—";
+  } catch (err) {
+    console.error("loadTrainer error:", err);
   }
 }
 
 // ─────────────────────────────────────────────
 // LOAD DIET PLAN  (tabbed by day)
-// FIX: removed the duplicate first loadDiet definition that referenced
-//      a non-existent #dietList element and had orphaned totalCals code.
 // ─────────────────────────────────────────────
 
 const SLOT_ICONS = {
@@ -200,14 +209,21 @@ async function loadDiet() {
     return;
   }
 
-  dietData = res.data?.data || res.data || [];
+  dietData = res.data?.data || [];
 
-  if (!dietData.length) {
+  if (!Array.isArray(dietData) || !dietData.length) {
     document.getElementById('dietSlots').innerHTML = '<div class="diet-empty">No diet plan assigned yet.</div>';
     return;
   }
 
-  // Build tabs
+  // Sort diet days in week order
+  const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  dietData.sort((a, b) => {
+    const aNorm = (a.day || '').charAt(0).toUpperCase() + (a.day || '').slice(1).toLowerCase().trim();
+    const bNorm = (b.day || '').charAt(0).toUpperCase() + (b.day || '').slice(1).toLowerCase().trim();
+    return dayOrder.indexOf(aNorm) - dayOrder.indexOf(bNorm);
+  });
+
   const tabsEl = document.getElementById('dietTabs');
   tabsEl.innerHTML = dietData.map((plan, i) => `
     <button class="diet-tab ${i === 0 ? 'active' : ''}"
@@ -215,7 +231,6 @@ async function loadDiet() {
       ${plan.day}
     </button>`).join('');
 
-  // Show first day
   renderDietSlots(0);
 }
 
@@ -266,30 +281,49 @@ function renderDietSlots(index) {
 async function loadGymPlan() {
   if (!currentUser) return;
   const el = document.getElementById('gymPlanBody');
+  if (!el) return;
 
-  const res = await API.get(`/gym-plans?user_id=${currentUser.id}`);
+  const res = await API.get(`/gym-plans/user/${currentUser.id}`);
+  console.log("Gym plan API response:", res);
+
   if (!res?.ok) {
     el.innerHTML = '<div class="gym-plan-empty">No gym plan assigned yet.</div>';
     return;
   }
 
   const plans = res.data?.data || res.data || [];
-  if (!plans.length) {
+  if (!Array.isArray(plans) || !plans.length) {
     el.innerHTML = '<div class="gym-plan-empty">No gym plan assigned yet.</div>';
     return;
   }
 
-  // Aggregate all days across plans
+  const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const allDays = {};
+
   plans.forEach(plan => {
-    const days = plan.days || {};
+    let days = plan.days || {};
+
+    // Fix: if backend sends JSON string
+    if (typeof days === "string") {
+      try {
+        days = JSON.parse(days);
+      } catch (e) {
+        console.error("Invalid days JSON:", days);
+        days = {};
+      }
+    }
+
     Object.keys(days).forEach(day => {
-      if (!allDays[day]) allDays[day] = [];
-      allDays[day].push(...(days[day] || []));
+      const normalized =
+        day.charAt(0).toUpperCase() + day.slice(1).toLowerCase().trim();
+
+      if (!allDays[normalized]) allDays[normalized] = [];
+
+      const exercises = Array.isArray(days[day]) ? days[day] : [];
+      allDays[normalized].push(...exercises);
     });
   });
 
-  const dayOrder   = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const sortedDays = Object.keys(allDays).sort(
     (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)
   );
@@ -299,24 +333,28 @@ async function loadGymPlan() {
     return;
   }
 
-  el.innerHTML = sortedDays.map((day, i) => {
+  el.innerHTML = "";
+
+  sortedDays.forEach((day, i) => {
     const exercises = allDays[day];
-    const exHtml    = exercises.map(ex => {
-      const sets = ex.sets     ? `<span class="gym-ex-pill sets">${ex.sets} sets</span>`  : '';
-      const reps = ex.reps     ? `<span class="gym-ex-pill reps">${ex.reps} reps</span>`  : '';
-      const rest = ex.rest     ? `<span class="gym-ex-pill rest">Rest ${ex.rest}</span>`  : '';
-      const dur  = ex.duration ? `<span class="gym-ex-pill">${ex.duration}</span>`        : '';
+
+    const exHtml = exercises.map(ex => {
+      const sets = ex.sets ? `<span class="gym-ex-pill sets">${ex.sets} sets</span>` : '';
+      const reps = ex.reps ? `<span class="gym-ex-pill reps">${ex.reps} reps</span>` : '';
+      const rest = ex.rest ? `<span class="gym-ex-pill rest">Rest ${ex.rest}</span>` : '';
+      const dur  = ex.duration ? `<span class="gym-ex-pill">${ex.duration}</span>` : '';
+
       return `
         <div class="gym-ex-row">
           <div class="gym-ex-name">${ex.name || ex.exercise || '—'}</div>
           ${sets}${reps}${rest}${dur}
-        </div>`;
+        </div>
+      `;
     }).join('');
 
-    return `
+    el.insertAdjacentHTML('beforeend', `
       <div class="gym-plan-card">
-        <div class="gym-day-header ${i === 0 ? 'open' : ''}"
-             onclick="toggleGymDay(this)">
+        <div class="gym-day-header ${i === 0 ? 'open' : ''}" onclick="toggleGymDay(this)">
           <span class="day-badge">${day}</span>
           <span>${exercises.length} exercise${exercises.length !== 1 ? 's' : ''}</span>
           <span class="arrow">▼</span>
@@ -324,13 +362,14 @@ async function loadGymPlan() {
         <div class="gym-exercises ${i === 0 ? 'open' : ''}">
           ${exHtml}
         </div>
-      </div>`;
-  }).join('');
+      </div>
+    `);
+  });
 }
-
 function toggleGymDay(header) {
   header.classList.toggle('open');
-  header.nextElementSibling.classList.toggle('open');
+  const body = header.nextElementSibling;
+  if (body) body.classList.toggle('open');
 }
 
 // ─────────────────────────────────────────────
@@ -351,7 +390,6 @@ function renderWorkouts() {
     </div>`).join('');
 }
 
-// FIX: function was commented-out/broken — restored as a proper named function
 function addExercise() {
   const day  = document.getElementById('exDay').value;
   const name = document.getElementById('exName').value.trim();
@@ -372,27 +410,6 @@ function deleteWorkout(i) {
 }
 
 // ─────────────────────────────────────────────
-// RENDER CLASSES
-// ─────────────────────────────────────────────
-
-function renderClasses() {
-  const el = document.getElementById('classesList');
-  if (!el) return;
-  el.innerHTML = classes.map(c => `
-    <div class="class-item">
-      <div>
-        <div class="class-name">${c.name}</div>
-        <div class="class-meta">
-          <span>👤 ${c.trainer}</span>
-          <span>🕐 ${c.time}</span>
-          <span>👥 ${c.spots}</span>
-        </div>
-      </div>
-      <span class="class-status cs-${c.status}">${c.statusLabel}</span>
-    </div>`).join('');
-}
-
-// ─────────────────────────────────────────────
 // RENDER NOTIFICATIONS
 // ─────────────────────────────────────────────
 
@@ -401,8 +418,10 @@ async function renderNotifs() {
   const el  = document.getElementById('notifBody');
   if (!el) return;
 
-  if (res && res.ok && res.data && res.data.length) {
-    el.innerHTML = res.data.map((n, i) => `
+  // FIX: notifications response is { ok, data: [...] } — unwrap correctly
+  const list = res?.data?.data || res?.data || [];
+  if (res && res.ok && Array.isArray(list) && list.length) {
+    el.innerHTML = list.map((n, i) => `
       <div class="notif-item ${i === 0 ? 'alert' : ''}">
         <div class="notif-dot-icon ${i === 0 ? 'red' : ''}">🔔</div>
         <div>
@@ -414,7 +433,7 @@ async function renderNotifs() {
     return;
   }
 
-  // Fallback to static data
+  // Fallback to static notifications
   el.innerHTML = notifs.map(n => `
     <div class="notif-item ${n.alert ? 'alert' : ''}">
       <div class="notif-dot-icon ${n.cls}">${n.icon}</div>
@@ -563,8 +582,6 @@ function showToast(msg, type = 'error') {
 
 // ─────────────────────────────────────────────
 // START
-// FIX: removed duplicate bare init() + applySavedTheme() calls at bottom.
-//      DOMContentLoaded is the single entry point.
 // ─────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
