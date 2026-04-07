@@ -20,11 +20,21 @@
     }
 
     .hero-bg {
-      position: absolute;
-      inset: 0;
-      background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80') center/cover no-repeat;
-      filter: brightness(0.25)
-    }
+  position: absolute;
+  inset: 0;
+
+  background: 
+    linear-gradient(to right, 
+      rgba(10,10,10,0.95) 35%, 
+      rgba(10,10,10,0.75) 50%, 
+      rgba(10,10,10,0.4) 65%, 
+      rgba(10,10,10,0.1) 80%
+    ),
+    url('../assets/gym-bkk.png') 75% center / 36% no-repeat;
+
+  filter: brightness(1.15);
+  backdrop-filter: blur(1px);
+}
 
     .hero-overlay {
       position: absolute;
@@ -36,7 +46,7 @@
       position: relative;
       z-index: 1;
       padding: 0 60px;
-      max-width: 640px
+      max-width: 600px
     }
 
     .hero-content h1 {
@@ -580,12 +590,14 @@
         <div>
           <div class="section-label">About Us</div>
           <h2 class="section-title">More Than Just a Gym</h2>
-          <p class="section-desc" style="margin-bottom:20px">True Fitness is a premium fitness facility located in
-            Mohali. We combine world-class equipment, certified trainers, and a proven methodology to help you achieve
-            extraordinary results.</p>
+          <p class="section-desc" style="margin-bottom:20px">Established in 2019, TRUE FITNESS is a fully equipped unisex gym located in Sector 115, Mohali. They boast a wide range of imported Viva Fitness machines, ensuring a comprehensive workout experience for their members. TRUE FITNESS offers personalized training programs including weight loss, weight gain, muscle building, and nutrition plans. Their certified trainers and supportive community atmosphere make TRUE FITNESS the perfect place to achieve your fitness goals.</p>
           <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px">Our expert coaches design
             personalized programs tailored to your goals — whether you want to lose weight, build muscle, or simply feel
             stronger and healthier every day.</p>
+            <p class="services-line">
+  <strong>Services Provided:</strong> Certified Personal Training, Weight Loss, Weight Gain, Muscle Building, Strength & Conditioning.
+</p>
+
           <div class="about-features">
             <div class="about-feat">
               <div class="feat-icon">🏋️</div>Modern Equipment
@@ -699,12 +711,13 @@
             <span class="logo-name">TRUE FITNESS</span>
           </div>
           <p>Transform your body and mind with our premium fitness facility and expert guidance.</p>
-          <div class="social-row">
-            <div class="social-btn">f</div>
-            <div class="social-btn">I</div>
-            
-           
-          </div>
+         <div class="social-row">
+  <a href="https://www.instagram.com/truefitness2024?igsh=MWt3OXc4ajFscXJtaQ%3D%3D&utm_source=qr" 
+     target="_blank" 
+     class="social-btn">
+      Follow us on Instagram
+  </a>
+</div>
         </div>
         <div class="footer-col">
           <h4>Quick Links</h4>
@@ -726,8 +739,12 @@
         </div>
         <div class="footer-col">
           <h4>Contact Us</h4>
-          <div class="footer-contact-item"><span class="footer-contact-icon">📍</span><span>SCO No: 1,2,3, Sector-115
-              Santemajra, Khuni Majra road, Pritam Market, Kharar Mohali, 140307</span></div>
+          <div class="footer-contact-item">
+  <span class="footer-contact-icon">📍</span>
+  <a href="https://share.google/yT2e7RhEVRYC0DDhy" target="_blank">
+    SCO No: 1,2,3, Sector-115 Santemajra, Khuni Majra road, Pritam Market, Kharar Mohali, 140307    [Click  for direction]
+  </a>
+</div>
           <div class="footer-contact-item"><span class="footer-contact-icon">📞</span><span>9877507810,
               8837740652</span></div>
           <div class="footer-contact-item"><span class="footer-contact-icon">✉️</span><span>truefitness@gmail.com</span>
