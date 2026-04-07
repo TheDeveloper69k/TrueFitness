@@ -163,11 +163,14 @@ function buildReceiptHTML(r) {
 
     // Compute expiry
     let expiry = '—';
-    if (r.payment_date && r.plan?.duration_days) {
-        const exp = new Date(r.payment_date);
-        exp.setDate(exp.getDate() + r.plan.duration_days);
-        expiry = exp.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    }
+if (r.membership_end_date) {
+    expiry = new Date(r.membership_end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+} else if (r.payment_date && r.plan?.duration_days) {
+    // fallback for old receipts that don't have membership_end_date
+    const exp = new Date(r.payment_date);
+    exp.setDate(exp.getDate() + r.plan.duration_days);
+    expiry = exp.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
 
     return `
   <div class="receipt-doc" id="receiptDoc">

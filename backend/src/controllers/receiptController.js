@@ -21,6 +21,7 @@ const getReceipts = async (req, res) => {
         transaction_id,
         payment_date,
         paid_at,
+        membership_end_date,
         user:users!payments_user_id_fkey ( id, name, phone, email ),
         plan:membership_plans!payments_plan_id_fkey ( id, name, duration_days, price )
       `, { count: "exact" })
