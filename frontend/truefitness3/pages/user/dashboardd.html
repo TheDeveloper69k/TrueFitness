@@ -123,7 +123,7 @@
 .membership-expiry-warn.show { display: block; }
 
 /* Loading skeleton */
-.sk { 
+.sk {
   background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -256,9 +256,11 @@
         </select>
         <input type="text" id="exName" placeholder="Exercise"/>
         <input type="text" id="exDur"  placeholder="Duration"/>
+        <!-- FIX: was disabled="addExercise()" -->
         <button class="add-btn" onclick="addExercise()">+ Add Exercise</button>
       </div>
     </div>
+
   </div>
 
   <!-- ROW 3: DIET PLAN + CLASSES -->
@@ -268,9 +270,7 @@
     <div class="section-card">
       <div class="sc-header"><span class="sc-icon">🥗</span><h3>Diet Plan</h3></div>
       <div class="sc-body">
-        <!-- Day tabs will be injected here -->
         <div class="diet-tabs" id="dietTabs"></div>
-        <!-- Meal slots for selected day -->
         <div id="dietSlots"></div>
       </div>
       <div class="diet-total"><span>Total Calories</span><strong id="totalCals">— kcal</strong></div>

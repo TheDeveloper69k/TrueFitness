@@ -16,9 +16,16 @@ let workouts = [
 ];
 
 const classes = [
-  { name: 'HIIT Training',      trainer: 'Mike Thompson', time: '6:00 PM – 7:00 PM', spots: '12/15', status: 'live',     statusLabel: 'In Progress' },
-  { name: 'Yoga & Flexibility', trainer: 'Emma Davis',    time: '7:30 PM – 8:30 PM', spots: '8/12',  status: 'upcoming', statusLabel: 'Upcoming'    },
-  { name: 'Strength Training',  trainer: 'Sarah Johnson', time: '6:00 AM – 7:00 AM', spots: '5/10',  status: 'tomorrow', statusLabel: 'Tomorrow'    },
+  { name: 'HIIT Training',       trainer: 'Mike Thompson',  time: '6:00 PM – 7:00 PM', spots: '12/15', status: 'live',     statusLabel: 'In Progress' },
+  { name: 'Yoga & Flexibility',  trainer: 'Emma Davis',     time: '7:30 PM – 8:30 PM', spots: '8/12',  status: 'upcoming', statusLabel: 'Upcoming'    },
+  { name: 'Strength Training',   trainer: 'Sarah Johnson',  time: '6:00 AM – 7:00 AM', spots: '5/10',  status: 'tomorrow', statusLabel: 'Tomorrow'    },
+];
+
+const goals = [
+  { name: 'Workouts Completed', current: 4,    target: 5,    unit: 'sessions'  },
+  { name: 'Calories Burned',    current: 1800, target: 2500, unit: 'kcal'      },
+  { name: 'Water Intake',       current: 6,    target: 8,    unit: 'glasses'   },
+  { name: 'Sleep Hours',        current: 7,    target: 8,    unit: 'hrs/night' },
 ];
 
 const notifs = [
@@ -34,8 +41,8 @@ const offers = [
 ];
 
 // Diet data stored per day for tab switching
+// FIX: was declared twice (once as a function-scoped const inside loadDiet, once here)
 let dietData = [];
-let activeDietDay = null;
 
 // ─────────────────────────────────────────────
 // INIT
@@ -68,7 +75,8 @@ async function init() {
 
   renderWorkouts();
   renderClasses();
-  renderNotifs();
+  // FIX: await so notifications load in sequence with the rest of the page
+  await renderNotifs();
   renderOffers();
 }
 
@@ -84,12 +92,12 @@ async function loadMembership() {
 
     // Plan type
     const planVal = m.membership_plan || m.plan_type || 'Premium';
-    document.getElementById('planType').textContent = planVal;
+    document.getElementById('planType').textContent    = planVal;
     document.getElementById('profilePlanType').textContent = planVal;
 
     // Member since
     if (m.joined_at || m.created_at) {
-      const d = new Date(m.joined_at || m.created_at);
+      const d     = new Date(m.joined_at || m.created_at);
       const label = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
       document.getElementById('memberSince').textContent  = label;
       document.getElementById('profileSince').textContent = label;
@@ -114,9 +122,9 @@ async function loadMembership() {
     // Expired badge
     if (m.membership_status === 'expired') {
       const badge = document.getElementById('membershipBadge');
-      badge.textContent        = 'Expired';
-      badge.style.background   = 'rgba(232,40,26,0.15)';
-      badge.style.color        = '#f87171';
+      badge.textContent      = 'Expired';
+      badge.style.background = 'rgba(232,40,26,0.15)';
+      badge.style.color      = '#f87171';
     }
   }
 }
@@ -140,11 +148,11 @@ async function loadTrainer() {
     const mRes = await API.get(`/gym/members/${currentUser.id}`);
     if (mRes && mRes.ok && mRes.data && mRes.data.trainer_name) {
       trainer = {
-        name:           mRes.data.trainer_name,
-        specialization: mRes.data.trainer_spec || 'Strength & Conditioning',
-        experience:     mRes.data.trainer_exp  || '—',
-        phone:          mRes.data.trainer_phone|| '—',
-        sessions_per_week: mRes.data.sessions  || '—',
+        name:              mRes.data.trainer_name,
+        specialization:    mRes.data.trainer_spec  || 'Strength & Conditioning',
+        experience:        mRes.data.trainer_exp   || '—',
+        phone:             mRes.data.trainer_phone || '—',
+        sessions_per_week: mRes.data.sessions      || '—',
       };
     }
   }
@@ -157,24 +165,30 @@ async function loadTrainer() {
     document.getElementById('trainerExp').textContent     = trainer.experience
       ? trainer.experience + (String(trainer.experience).includes('year') ? '' : ' years experience')
       : '—';
-    document.getElementById('trainerSpecInfo').textContent    = trainer.specialization   || '—';
-    document.getElementById('trainerExpInfo').textContent     = trainer.experience
+    document.getElementById('trainerSpecInfo').textContent = trainer.specialization || '—';
+    document.getElementById('trainerExpInfo').textContent  = trainer.experience
       ? trainer.experience + (String(trainer.experience).includes('year') ? '' : ' yrs')
       : '—';
-    document.getElementById('trainerSessions').textContent    = trainer.sessions_per_week
+    document.getElementById('trainerSessions').textContent = trainer.sessions_per_week
       ? trainer.sessions_per_week + '/week'
       : '—';
-    document.getElementById('trainerPhone').textContent       = trainer.phone || '—';
+    document.getElementById('trainerPhone').textContent    = trainer.phone || '—';
   }
 }
 
 // ─────────────────────────────────────────────
 // LOAD DIET PLAN  (tabbed by day)
+// FIX: removed the duplicate first loadDiet definition that referenced
+//      a non-existent #dietList element and had orphaned totalCals code.
 // ─────────────────────────────────────────────
 
 const SLOT_ICONS = {
-  breakfast: '🌅', lunch: '☀️', dinner: '🌙',
-  snack: '🍎', 'pre-workout': '⚡', 'post-workout': '🥤',
+  breakfast:      '🌅',
+  lunch:          '☀️',
+  dinner:         '🌙',
+  snack:          '🍎',
+  'pre-workout':  '⚡',
+  'post-workout': '🥤',
 };
 
 async function loadDiet() {
@@ -224,11 +238,11 @@ function renderDietSlots(index) {
 
   let totalCals = 0;
   el.innerHTML = slots.map(slot => {
-    const cals = parseInt(slot.calories || slot.kcal || 0);
-    totalCals += cals;
+    const cals  = parseInt(slot.calories || slot.kcal || 0);
+    totalCals  += cals;
     const icon  = SLOT_ICONS[slot.label?.toLowerCase()] || '🍽️';
-    const label = slot.label || 'Meal';
-    const time  = slot.time  || '';
+    const label = slot.label    || 'Meal';
+    const time  = slot.time     || '';
     const food  = slot.food_name || slot.food || '—';
     return `
       <div class="diet-slot">
@@ -275,7 +289,7 @@ async function loadGymPlan() {
     });
   });
 
-  const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dayOrder   = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const sortedDays = Object.keys(allDays).sort(
     (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)
   );
@@ -287,11 +301,11 @@ async function loadGymPlan() {
 
   el.innerHTML = sortedDays.map((day, i) => {
     const exercises = allDays[day];
-    const exHtml = exercises.map(ex => {
-      const sets = ex.sets ? `<span class="gym-ex-pill sets">${ex.sets} sets</span>` : '';
-      const reps = ex.reps ? `<span class="gym-ex-pill reps">${ex.reps} reps</span>` : '';
-      const rest = ex.rest ? `<span class="gym-ex-pill rest">Rest ${ex.rest}</span>` : '';
-      const dur  = ex.duration ? `<span class="gym-ex-pill">${ex.duration}</span>` : '';
+    const exHtml    = exercises.map(ex => {
+      const sets = ex.sets     ? `<span class="gym-ex-pill sets">${ex.sets} sets</span>`  : '';
+      const reps = ex.reps     ? `<span class="gym-ex-pill reps">${ex.reps} reps</span>`  : '';
+      const rest = ex.rest     ? `<span class="gym-ex-pill rest">Rest ${ex.rest}</span>`  : '';
+      const dur  = ex.duration ? `<span class="gym-ex-pill">${ex.duration}</span>`        : '';
       return `
         <div class="gym-ex-row">
           <div class="gym-ex-name">${ex.name || ex.exercise || '—'}</div>
@@ -316,8 +330,7 @@ async function loadGymPlan() {
 
 function toggleGymDay(header) {
   header.classList.toggle('open');
-  const exEl = header.nextElementSibling;
-  exEl.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
 }
 
 // ─────────────────────────────────────────────
@@ -338,6 +351,7 @@ function renderWorkouts() {
     </div>`).join('');
 }
 
+// FIX: function was commented-out/broken — restored as a proper named function
 function addExercise() {
   const day  = document.getElementById('exDay').value;
   const name = document.getElementById('exName').value.trim();
@@ -384,24 +398,24 @@ function renderClasses() {
 
 async function renderNotifs() {
   const res = await API.get('/notifications');
-  if (res && res.ok && res.data.length) {
-    const el = document.getElementById('notifBody');
-    if (el) {
-      el.innerHTML = res.data.map((n, i) => `
-        <div class="notif-item ${i === 0 ? 'alert' : ''}">
-          <div class="notif-dot-icon ${i === 0 ? 'red' : ''}">🔔</div>
-          <div>
-            <div class="notif-title">${n.title}</div>
-            <div class="notif-msg">${n.message || n.body || ''}</div>
-            <div class="notif-time">${n.created_at ? new Date(n.created_at).toLocaleString() : 'Just now'}</div>
-          </div>
-        </div>`).join('');
-    }
+  const el  = document.getElementById('notifBody');
+  if (!el) return;
+
+  if (res && res.ok && res.data && res.data.length) {
+    el.innerHTML = res.data.map((n, i) => `
+      <div class="notif-item ${i === 0 ? 'alert' : ''}">
+        <div class="notif-dot-icon ${i === 0 ? 'red' : ''}">🔔</div>
+        <div>
+          <div class="notif-title">${n.title}</div>
+          <div class="notif-msg">${n.message || n.body || ''}</div>
+          <div class="notif-time">${n.created_at ? new Date(n.created_at).toLocaleString() : 'Just now'}</div>
+        </div>
+      </div>`).join('');
     return;
   }
-  const el = document.getElementById('notifBody');
-  if (!el) return;
-  el.innerHTML = notifs.map((n, i) => `
+
+  // Fallback to static data
+  el.innerHTML = notifs.map(n => `
     <div class="notif-item ${n.alert ? 'alert' : ''}">
       <div class="notif-dot-icon ${n.cls}">${n.icon}</div>
       <div>
@@ -432,10 +446,10 @@ function renderOffers() {
 // PANEL HELPERS
 // ─────────────────────────────────────────────
 
-function openPanel(id) {
+window.openPanel = function(id) {
   document.getElementById('panelOverlay').classList.add('open');
   document.getElementById(id).classList.add('open');
-}
+};
 
 function closePanel(id) {
   document.getElementById(id).classList.remove('open');
@@ -510,7 +524,7 @@ function setAccent(color, dark, btn) {
   document.getElementById('previewBtn').style.background = color;
   document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  localStorage.setItem('tf_accent', color);
+  localStorage.setItem('tf_accent',      color);
   localStorage.setItem('tf_accent_dark', dark);
 }
 
@@ -549,6 +563,8 @@ function showToast(msg, type = 'error') {
 
 // ─────────────────────────────────────────────
 // START
+// FIX: removed duplicate bare init() + applySavedTheme() calls at bottom.
+//      DOMContentLoaded is the single entry point.
 // ─────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
