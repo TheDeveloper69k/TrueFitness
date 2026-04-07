@@ -34,28 +34,29 @@ async function loadDiet() {
   const dietList = document.getElementById("dietList");
   dietList.innerHTML = "";
 
-  let totalCalories = 0;
-
   const dietData = res.data?.data || res.data || [];
-console.log("DIET DATA:", dietData);
-dietData.forEach((item) => {
-    dietList.innerHTML += `
-      <div class="diet-item">
-        <strong>${item.meal_type}</strong>: 
-        ${item.food_name}
-        <div>${item.calories}</div>
-        <small>${item.day}</small>
-      </div>
-    `;
+  console.log("DIET DATA:", dietData);
 
-    // optional: extract calories number
-    const calMatch = item.calories?.match(/\d+/);
-    if (calMatch) totalCalories += parseInt(calMatch[0]);
+  dietData.forEach((plan) => {
+    const day = plan.day;
+
+    (plan.slots || []).forEach((slot) => {
+      dietList.innerHTML += `
+        <div class="diet-item">
+          <strong>${slot.label}</strong> (${slot.time})
+          <div>${slot.food_name}</div>
+          <small>${day}</small>
+        </div>
+      `;
+    });
   });
+}
+
+ 
 
   const totalEl = document.getElementById("totalCals");
 if (totalEl) totalEl.textContent = totalCalories + " kcal";
-}
+
 
 const goals = [
   { name: 'Workouts Completed', current: 4,  target: 5,  unit: 'sessions' },
