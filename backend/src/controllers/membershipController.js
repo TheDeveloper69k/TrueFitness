@@ -500,7 +500,8 @@ exports.renewMembership = async (req, res) => {
       });
     }
 
-    const newStartDate = normalizeDate(start_date || new Date());
+    const today = new Date().toISOString().split("T")[0];
+    const newStartDate = normalizeDate(start_date || today);
     if (!newStartDate) {
       return res.status(400).json({
         success: false,
@@ -543,7 +544,23 @@ exports.renewMembership = async (req, res) => {
       });
     }
 
-    const newEndDate = addDays(newStartDate, durationDays);
+    // ✅ FIX: Calculate remaining days from existing membership
+    let effectiveStartDate = newStartDate;
+    let totalDays = durationDays;
+
+    const existingEndDate = existingMembership.end_date
+      ? new Date(existingMembership.end_date)
+      : null;
+    const todayDate = new Date(today);
+
+    if (existingEndDate && existingEndDate > todayDate) {
+      // There are remaining days — add them to the new plan duration
+      const remainingMs = existingEndDate - todayDate;
+      const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+      totalDays = durationDays + remainingDays;
+    }
+
+    const newEndDate = addDays(effectiveStartDate, totalDays);
     if (!newEndDate) {
       return res.status(400).json({
         success: false,
@@ -551,9 +568,8 @@ exports.renewMembership = async (req, res) => {
       });
     }
 
-    // DOB is NOT touched here
     const updatePayload = {
-      start_date: newStartDate,
+      start_date: effectiveStartDate,
       end_date: newEndDate,
       status: "active",
       monthly_plan: plan.name,
@@ -589,7 +605,8 @@ exports.renewMembership = async (req, res) => {
       error: err.message,
     });
   }
-}; exports.modifyMembership = async (req, res) => {
+};
+exports.modifyMembership = async (req, res) => {
   try {
     const { id } = req.params;
     const {
