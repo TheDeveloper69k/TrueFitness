@@ -271,6 +271,7 @@ exports.assignMembership = async (req, res) => {
       transaction_id: transaction_id || `TF-${Date.now()}`,
       paid_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      membership_end_date: resolvedEndDate,
     };
 
     const { data: payment, error: paymentError } = await supabase
@@ -474,17 +475,10 @@ exports.updateMembershipStatus = async (req, res) => {
 exports.renewMembership = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      start_date,
-      monthly_plan,
-      discount,
-    } = req.body;
+    const { start_date, monthly_plan, discount } = req.body;
 
     if (!monthly_plan || !String(monthly_plan).trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Plan name is required",
-      });
+      return res.status(400).json({ success: false, message: "Plan name is required" });
     }
 
     const { data: existingMembership, error: fetchError } = await supabase
@@ -494,82 +488,56 @@ exports.renewMembership = async (req, res) => {
       .single();
 
     if (fetchError || !existingMembership) {
-      return res.status(404).json({
-        success: false,
-        message: "Membership not found",
-      });
+      return res.status(404).json({ success: false, message: "Membership not found" });
     }
 
     const today = new Date().toISOString().split("T")[0];
     const newStartDate = normalizeDate(start_date || today);
     if (!newStartDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid start date",
-      });
+      return res.status(400).json({ success: false, message: "Invalid start date" });
     }
 
     const parsedDiscount =
       discount !== undefined ? Number(discount) : Number(existingMembership.discount || 0);
 
     if (Number.isNaN(parsedDiscount) || parsedDiscount < 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Discount must be a valid positive number",
-      });
+      return res.status(400).json({ success: false, message: "Discount must be a valid positive number" });
     }
 
     const plan = await getPlanByName(String(monthly_plan).trim());
     if (!plan) {
-      return res.status(400).json({
-        success: false,
-        message: "Selected membership plan not found or inactive",
-      });
+      return res.status(400).json({ success: false, message: "Selected membership plan not found or inactive" });
     }
 
     const newPlanPrice = Number(plan.price || 0);
     const durationDays = Number(plan.duration_days || 0);
 
     if (parsedDiscount > newPlanPrice) {
-      return res.status(400).json({
-        success: false,
-        message: "Discount cannot be greater than plan price",
-      });
+      return res.status(400).json({ success: false, message: "Discount cannot be greater than plan price" });
     }
 
     if (durationDays <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Selected plan has invalid duration",
-      });
+      return res.status(400).json({ success: false, message: "Selected plan has invalid duration" });
     }
 
-    // ✅ FIX: Calculate remaining days from existing membership
-    let effectiveStartDate = newStartDate;
+    // Calculate remaining days rollover
     let totalDays = durationDays;
-
-    const existingEndDate = existingMembership.end_date
-      ? new Date(existingMembership.end_date)
-      : null;
+    const existingEndDate = existingMembership.end_date ? new Date(existingMembership.end_date) : null;
     const todayDate = new Date(today);
 
     if (existingEndDate && existingEndDate > todayDate) {
-      // There are remaining days — add them to the new plan duration
       const remainingMs = existingEndDate - todayDate;
       const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
       totalDays = durationDays + remainingDays;
     }
 
-    const newEndDate = addDays(effectiveStartDate, totalDays);
+    const newEndDate = addDays(newStartDate, totalDays);
     if (!newEndDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid end date",
-      });
+      return res.status(400).json({ success: false, message: "Invalid end date" });
     }
 
     const updatePayload = {
-      start_date: effectiveStartDate,
+      start_date: newStartDate,
       end_date: newEndDate,
       status: "active",
       monthly_plan: plan.name,
@@ -586,18 +554,42 @@ exports.renewMembership = async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to renew membership",
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, message: "Failed to renew membership", error: error.message });
     }
 
+    // ✅ Payment insert is INSIDE try block, BEFORE the final return
+    const finalAmount = newPlanPrice - parsedDiscount;
+
+    const paymentPayload = {
+      user_id: existingMembership.user_id || null,
+      amount: finalAmount,
+      status: "success",
+      payment_date: new Date().toISOString(),
+      plan_id: plan.id,
+      gym_id: existingMembership.gym_id || null,
+      currency: req.body.currency || "INR",
+      payment_method: req.body.payment_method || "cash",
+      transaction_id: req.body.transaction_id || `TF-${Date.now()}`,
+      paid_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      membership_end_date: newEndDate, // ✅ actual end date with rollover
+    };
+
+    const { error: paymentError } = await supabase
+      .from("payments")
+      .insert([paymentPayload]);
+
+    if (paymentError) {
+      console.error("Receipt creation failed after renewal:", paymentError.message);
+    }
+
+    // ✅ Single final return
     return res.status(200).json({
       success: true,
       message: "Membership renewed successfully",
       data,
     });
+
   } catch (err) {
     return res.status(500).json({
       success: false,

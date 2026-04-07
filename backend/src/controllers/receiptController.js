@@ -88,6 +88,7 @@ const getReceiptById = async (req, res) => {
         razorpay_order_id,
         payment_date,
         paid_at,
+        membership_end_date,
         user:users!payments_user_id_fkey ( id, name, phone, email, whatsapp_number ),
         plan:membership_plans!payments_plan_id_fkey ( id, name, duration_days, price, features )
       `)
