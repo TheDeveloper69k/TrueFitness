@@ -4,18 +4,147 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>True Fitness — Member Dashboard</title>
-<!-- ✅ Path is correct: pages/user/ → ../../css/ -->
 <link rel="stylesheet" href="../../css/user-dashboard.css"/>
+<style>
+/* ── EXTRA STYLES FOR NEW SECTIONS ── */
+
+/* Gym Plan Section */
+.gym-plan-card { margin-bottom: 8px; }
+.gym-day-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: rgba(232,40,26,0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700; font-size: 13px; color: var(--accent, #e8281a);
+  transition: background 0.2s;
+}
+.gym-day-header:hover { background: rgba(232,40,26,0.15); }
+.gym-day-header .day-badge {
+  background: var(--accent, #e8281a);
+  color: #fff; border-radius: 6px;
+  padding: 2px 9px; font-size: 11px; font-weight: 800;
+}
+.gym-day-header .arrow { margin-left: auto; transition: transform 0.2s; }
+.gym-day-header.open .arrow { transform: rotate(180deg); }
+.gym-exercises {
+  display: none; flex-direction: column; gap: 6px;
+  padding: 8px 0 4px 14px;
+}
+.gym-exercises.open { display: flex; }
+.gym-ex-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px; border-left: 3px solid var(--accent, #e8281a);
+}
+.gym-ex-name { font-size: 13px; font-weight: 600; flex: 1; }
+.gym-ex-pill {
+  font-size: 11px; padding: 2px 8px;
+  border-radius: 20px; font-weight: 700;
+  background: rgba(232,40,26,0.15); color: var(--accent, #e8281a);
+}
+.gym-ex-pill.sets  { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.gym-ex-pill.reps  { background: rgba(34,197,94,0.15);  color: #4ade80; }
+.gym-ex-pill.rest  { background: rgba(234,179,8,0.15);  color: #facc15; }
+
+/* Diet Plan Section */
+.diet-tabs {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding-bottom: 6px; margin-bottom: 12px;
+  scrollbar-width: none;
+}
+.diet-tabs::-webkit-scrollbar { display: none; }
+.diet-tab {
+  flex-shrink: 0; padding: 5px 14px;
+  border-radius: 20px; font-size: 12px; font-weight: 700;
+  cursor: pointer; border: 1.5px solid rgba(255,255,255,0.1);
+  background: transparent; color: rgba(255,255,255,0.5);
+  transition: all 0.2s;
+}
+.diet-tab.active {
+  background: var(--accent, #e8281a);
+  border-color: var(--accent, #e8281a);
+  color: #fff;
+}
+.diet-slot {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px; margin-bottom: 8px;
+  border-left: 3px solid transparent;
+  transition: border-color 0.2s;
+}
+.diet-slot:hover { border-color: var(--accent, #e8281a); }
+.diet-slot-icon {
+  font-size: 20px; width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(232,40,26,0.1); border-radius: 8px; flex-shrink: 0;
+}
+.diet-slot-label { font-size: 11px; font-weight: 700; color: var(--accent, #e8281a); text-transform: uppercase; letter-spacing: 0.5px; }
+.diet-slot-time  { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.diet-slot-food  { font-size: 13px; font-weight: 600; margin-top: 2px; }
+.diet-slot-cals  {
+  margin-left: auto; font-size: 12px; font-weight: 800;
+  color: var(--accent, #e8281a); flex-shrink: 0;
+  padding-top: 2px;
+}
+.diet-empty {
+  text-align: center; padding: 24px; color: rgba(255,255,255,0.3);
+  font-size: 13px;
+}
+
+/* Trainer Section */
+.trainer-card-body { display: flex; align-items: center; gap: 16px; padding: 4px 0 12px; }
+.trainer-avatar-lg {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--accent, #e8281a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.trainer-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.trainer-info-item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 10px; }
+.trainer-info-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.trainer-info-val   { font-size: 13px; font-weight: 700; }
+.trainer-contact-btn {
+  margin-top: 12px; width: 100%; padding: 9px;
+  background: rgba(232,40,26,0.12); border: 1.5px solid rgba(232,40,26,0.3);
+  color: var(--accent, #e8281a); border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.trainer-contact-btn:hover { background: rgba(232,40,26,0.25); }
+
+/* Membership Progress */
+.membership-expiry-warn {
+  margin-top: 10px; padding: 8px 12px;
+  background: rgba(232,40,26,0.1); border-radius: 8px;
+  font-size: 12px; color: rgba(255,160,140,0.9); display: none;
+}
+.membership-expiry-warn.show { display: block; }
+
+/* Loading skeleton */
+.sk { 
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px; height: 14px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* Gym plan empty */
+.gym-plan-empty {
+  text-align: center; padding: 24px; color: rgba(255,255,255,0.3);
+  font-size: 13px;
+}
+</style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <header class="topbar">
   <img src="../../../Assets/Gymlogo.png" style="height:40px;" alt="logo">
-      <div class="topbar-name">TRUE FITNESS</div>
-      <div class="topbar-sub">Member Dashboard</div>
-    </div>
-  </div>
+  <div class="topbar-name">TRUE FITNESS</div>
+  <div class="topbar-sub">Member Dashboard</div>
   <div class="topbar-right">
     <button class="tb-icon-btn" onclick="openPanel('offersPanel')" title="Exclusive Offers">
       🎁<div class="tb-badge"></div>
@@ -49,10 +178,75 @@
     </div>
   </div>
 
-  <!-- WORKOUT PLAN + MEMBERSHIP -->
+  <!-- ROW 1: MEMBERSHIP + TRAINER -->
   <div class="two-col">
+
+    <!-- MEMBERSHIP CARD -->
     <div class="section-card">
-      <div class="sc-header"><span class="sc-icon">🏋️</span><h3>Weekly Workout Plan</h3></div>
+      <div class="sc-header">
+        <span class="sc-icon">💎</span>
+        <h3>Membership</h3>
+        <span class="pill-active" style="margin-left:auto" id="membershipBadge">Active</span>
+      </div>
+      <div class="sc-body">
+        <div class="membership-row"><span class="mem-label">Plan Type</span><span class="mem-val" id="planType">—</span></div>
+        <div class="membership-row"><span class="mem-label">Member Since</span><span class="mem-val" id="memberSince">—</span></div>
+        <div class="membership-row"><span class="mem-label">Renewal Date</span><span class="mem-val" id="renewalDate">—</span></div>
+        <div class="membership-row" style="border:none"><span class="mem-label">Days Left</span><span class="mem-val accent" id="daysLeft">—</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="membershipProgress" style="width:0%"></div></div>
+        <div class="membership-expiry-warn" id="expiryWarn">⚠️ Your membership is expiring soon. Please renew to continue access.</div>
+      </div>
+    </div>
+
+    <!-- TRAINER CARD -->
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">👤</span><h3>Your Trainer</h3></div>
+      <div id="trainerBody">
+        <div class="trainer-card-body">
+          <div class="trainer-avatar-lg" id="trainerInitial">—</div>
+          <div>
+            <div class="trainer-name" id="trainerName" style="font-size:16px;font-weight:800;">Not Assigned</div>
+            <div class="trainer-spec" id="trainerSpec" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">—</div>
+            <div class="trainer-exp" style="font-size:12px;margin-top:4px;">⭐ <span id="trainerExp">—</span></div>
+          </div>
+        </div>
+        <div class="trainer-info-grid">
+          <div class="trainer-info-item">
+            <div class="trainer-info-label">Specialization</div>
+            <div class="trainer-info-val" id="trainerSpecInfo">—</div>
+          </div>
+          <div class="trainer-info-item">
+            <div class="trainer-info-label">Experience</div>
+            <div class="trainer-info-val" id="trainerExpInfo">—</div>
+          </div>
+          <div class="trainer-info-item">
+            <div class="trainer-info-label">Sessions / Week</div>
+            <div class="trainer-info-val" id="trainerSessions">—</div>
+          </div>
+          <div class="trainer-info-item">
+            <div class="trainer-info-label">Contact</div>
+            <div class="trainer-info-val" id="trainerPhone">—</div>
+          </div>
+        </div>
+        <button class="trainer-contact-btn" onclick="showToast('Your trainer will contact you shortly!','success')">📞 Contact Trainer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: GYM PLAN + WORKOUT -->
+  <div class="two-col">
+
+    <!-- GYM PLAN CARD -->
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">🏋️</span><h3>Gym Plan</h3></div>
+      <div class="sc-body" id="gymPlanBody">
+        <div class="gym-plan-empty">Loading your gym plan…</div>
+      </div>
+    </div>
+
+    <!-- WEEKLY WORKOUT -->
+    <div class="section-card">
+      <div class="sc-header"><span class="sc-icon">📋</span><h3>Weekly Workout Plan</h3></div>
       <div class="sc-body" id="workoutList"></div>
       <div class="add-exercise-form">
         <select id="exDay">
@@ -62,64 +256,31 @@
         </select>
         <input type="text" id="exName" placeholder="Exercise"/>
         <input type="text" id="exDur"  placeholder="Duration"/>
-        <button class="add-btn" disabled="addExercise()">+ Add Exercise</button>
-      </div>
-    </div>
-<div class="card">
-  <!-- <h3>Your Membership</h3> -->
-
-  <!-- <p><strong>Plan:</strong> <span id="userPlanName">-</span></p>
-  <p><strong>Price:</strong> <span id="userPlanPrice">-</span></p>
-  <p><strong>Duration:</strong> <span id="userPlanDuration">-</span></p> -->
-
-  <ul id="userPlanFeatures"></ul>
-</div>
-    <div class="section-card">
-      <div class="sc-header">
-        <span class="sc-icon">💎</span>
-        <h3>Membership</h3>
-        <span class="pill-active" style="margin-left:auto" id="membershipBadge">Active</span>
-      </div>
-      <div class="sc-body">
-        <div class="membership-row"><span class="mem-label">Plan Type</span><span class="mem-val" id="planType">Premium</span></div>
-        <div class="membership-row"><span class="mem-label">Member Since</span><span class="mem-val" id="memberSince">Jan 2025</span></div>
-        <div class="membership-row"><span class="mem-label">Renewal Date</span><span class="mem-val" id="renewalDate">May 5, 2026</span></div>
-        <div class="membership-row" style="border:none"><span class="mem-label">Days Left</span><span class="mem-val accent" id="daysLeft">45</span></div>
-        <div class="progress-bar"><div class="progress-fill" id="membershipProgress" style="width:15%"></div></div>
+        <button class="add-btn" onclick="addExercise()">+ Add Exercise</button>
       </div>
     </div>
   </div>
 
-  <!-- TRAINER + CLASSES -->
+  <!-- ROW 3: DIET PLAN + CLASSES -->
   <div class="two-col">
+
+    <!-- DIET PLAN CARD -->
     <div class="section-card">
-      <div class="sc-header"><span class="sc-icon">👤</span><h3>Your Trainer</h3></div>
-      <div class="trainer-row">
-        <div class="trainer-avatar" id="trainerInitial">M</div>
-        <div>
-          <div class="trainer-name" id="trainerName">Manoj</div>
-          <div class="trainer-spec" id="trainerSpec">Strength &amp; Conditioning</div>
-          <div class="trainer-exp">⭐ <span id="trainerExp">8 years experience</span></div>
-        </div>
+      <div class="sc-header"><span class="sc-icon">🥗</span><h3>Diet Plan</h3></div>
+      <div class="sc-body">
+        <!-- Day tabs will be injected here -->
+        <div class="diet-tabs" id="dietTabs"></div>
+        <!-- Meal slots for selected day -->
+        <div id="dietSlots"></div>
       </div>
-      
+      <div class="diet-total"><span>Total Calories</span><strong id="totalCals">— kcal</strong></div>
     </div>
 
+    <!-- TODAY'S CLASSES -->
     <div class="section-card">
       <div class="sc-header"><span class="sc-icon">📅</span><h3>Today's Classes</h3></div>
-     
+      <div class="sc-body" id="classesList"></div>
     </div>
-  </div>
-
-  <!-- DIET PLAN + GOALS -->
-  <div class="two-col">
-    <div class="section-card">
-      <div class="sc-header"><span class="sc-icon">🥗</span><h3>Today's Diet Plan</h3></div>
-      <div class="sc-body" id="dietList"></div>
-      <div class="diet-total"><span>Total Calories</span><strong id="totalCals">1,680 kcal</strong></div>
-    </div>
-
-   
   </div>
 
 </main>
@@ -214,8 +375,8 @@
       <div class="profile-grid">
         <div class="profile-field"><div class="profile-field-label">Email</div><div class="profile-field-val" id="profileEmail">user@truefitness.com</div></div>
         <div class="profile-field"><div class="profile-field-label">Phone</div><div class="profile-field-val" id="profilePhone">—</div></div>
-        <div class="profile-field"><div class="profile-field-label">Member Since</div><div class="profile-field-val" id="profileSince">Jan 2025</div></div>
-        <div class="profile-field"><div class="profile-field-label">Membership Type</div><div class="profile-field-val" id="profilePlanType">Premium Annual</div></div>
+        <div class="profile-field"><div class="profile-field-label">Member Since</div><div class="profile-field-val" id="profileSince">—</div></div>
+        <div class="profile-field"><div class="profile-field-label">Membership Type</div><div class="profile-field-val" id="profilePlanType">—</div></div>
       </div>
       <div class="goals-section">
         <div class="goals-label">Fitness Goals</div>
@@ -377,7 +538,6 @@
   </div>
 </div>
 
-<!-- ✅ SCRIPTS: api.js MUST be first, then auth.js, then user-dashboard.js -->
 <script src="../../js/api.js"></script>
 <script src="../../js/auth.js"></script>
 <script src="../../js/user-dashboard.js"></script>

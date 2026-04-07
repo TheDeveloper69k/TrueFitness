@@ -9,115 +9,71 @@ const currentUser = requireRole('user');
 // ─────────────────────────────────────────────
 
 let workouts = [
-  { day: 'Mon', name: 'Chest & Triceps', dur: '60 min' },
-  { day: 'Tue', name: 'Back & Biceps',   dur: '60 min' },
-  { day: 'Wed', name: 'Chest & Triceps', dur: '60 min' },
-  { day: 'Thu', name: 'Legs & Shoulders',dur: '75 min' },
+  { day: 'Mon', name: 'Chest & Triceps',  dur: '60 min' },
+  { day: 'Tue', name: 'Back & Biceps',    dur: '60 min' },
+  { day: 'Wed', name: 'Chest & Triceps',  dur: '60 min' },
+  { day: 'Thu', name: 'Legs & Shoulders', dur: '75 min' },
 ];
 
 const classes = [
-  { name: 'HIIT Training',       trainer: 'Mike Thompson',  time: '6:00 PM – 7:00 PM', spots: '12/15', status: 'live',     statusLabel: 'In Progress' },
-  { name: 'Yoga & Flexibility',  trainer: 'Emma Davis',     time: '7:30 PM – 8:30 PM', spots: '8/12',  status: 'upcoming', statusLabel: 'Upcoming'    },
-  { name: 'Strength Training',   trainer: 'Sarah Johnson',  time: '6:00 AM – 7:00 AM', spots: '5/10',  status: 'tomorrow', statusLabel: 'Tomorrow'    },
-];
-
-async function loadDiet() {
-  if (!currentUser) return;
-
-  const res = await API.get(`/diet/${currentUser.id}`);
-
-  if (!res?.ok) {
-    console.log("Failed to load diet");
-    return;
-  }
-
-  const dietList = document.getElementById("dietList");
-  dietList.innerHTML = "";
-
-  const dietData = res.data?.data || res.data || [];
-  console.log("DIET DATA:", dietData);
-
-  dietData.forEach((plan) => {
-    const day = plan.day;
-
-    (plan.slots || []).forEach((slot) => {
-      dietList.innerHTML += `
-        <div class="diet-item">
-          <strong>${slot.label}</strong> (${slot.time})
-          <div>${slot.food_name}</div>
-          <small>${day}</small>
-        </div>
-      `;
-    });
-  });
-}
-
- 
-
-  const totalEl = document.getElementById("totalCals");
-if (totalEl) totalEl.textContent = totalCalories + " kcal";
-
-
-const goals = [
-  { name: 'Workouts Completed', current: 4,  target: 5,  unit: 'sessions' },
-  { name: 'Calories Burned',    current: 1800, target: 2500, unit: 'kcal' },
-  { name: 'Water Intake',       current: 6,  target: 8,  unit: 'glasses' },
-  { name: 'Sleep Hours',        current: 7,  target: 8,  unit: 'hrs/night' },
+  { name: 'HIIT Training',      trainer: 'Mike Thompson', time: '6:00 PM – 7:00 PM', spots: '12/15', status: 'live',     statusLabel: 'In Progress' },
+  { name: 'Yoga & Flexibility', trainer: 'Emma Davis',    time: '7:30 PM – 8:30 PM', spots: '8/12',  status: 'upcoming', statusLabel: 'Upcoming'    },
+  { name: 'Strength Training',  trainer: 'Sarah Johnson', time: '6:00 AM – 7:00 AM', spots: '5/10',  status: 'tomorrow', statusLabel: 'Tomorrow'    },
 ];
 
 const notifs = [
   { icon: '🔴', cls: 'red', title: 'Membership Reminder', msg: 'Your premium membership expires in 45 days', time: '2 hours ago', alert: true },
-  { icon: '🔔', cls: '',    title: 'New Class Added',     msg: 'HIIT training class now available on weekends', time: '1 day ago' },
+  { icon: '🔔', cls: '',    title: 'New Class Added',      msg: 'HIIT training class now available on weekends', time: '1 day ago' },
   { icon: '🏆', cls: '',    title: 'Achievement Unlocked', msg: "Congratulations! You've completed 100 workouts", time: '3 days ago' },
 ];
 
 const offers = [
   { icon: '💪', featured: true,  name: '50% Off on Personal Training', desc: 'Get half price on your first month of personal training sessions', tag: 'Valid till March 31' },
-  { icon: '🎁', featured: false, name: 'Free Diet Consultation',       desc: 'Complimentary nutrition planning with our expert dietitians',     tag: 'Limited time offer' },
-  { icon: '👥', featured: false, name: 'Refer & Earn',                 desc: 'Get 1 month free membership for every friend you refer',          tag: 'Ongoing offer' },
+  { icon: '🎁', featured: false, name: 'Free Diet Consultation',        desc: 'Complimentary nutrition planning with our expert dietitians',    tag: 'Limited time offer' },
+  { icon: '👥', featured: false, name: 'Refer & Earn',                  desc: 'Get 1 month free membership for every friend you refer',         tag: 'Ongoing offer' },
 ];
 
+// Diet data stored per day for tab switching
+let dietData = [];
+let activeDietDay = null;
+
 // ─────────────────────────────────────────────
-// INIT — load user data from session + API
+// INIT
 // ─────────────────────────────────────────────
 
 async function init() {
-  // Populate from session
   if (currentUser) {
     const firstName = (currentUser.name || 'User').split(' ')[0];
-    document.getElementById('userFirstName').textContent = firstName;
-    document.getElementById('menuWelcome').textContent   = `Welcome, ${firstName}`;
-    document.getElementById('menuUserName').textContent  = currentUser.name || 'User';
-    document.getElementById('menuUserPhone').textContent = currentUser.phone || '—';
+    document.getElementById('userFirstName').textContent  = firstName;
+    document.getElementById('menuWelcome').textContent    = `Welcome, ${firstName}`;
+    document.getElementById('menuUserName').textContent   = currentUser.name || 'User';
+    document.getElementById('menuUserPhone').textContent  = currentUser.phone || '—';
     document.getElementById('menuAvatarInit').textContent = firstName[0].toUpperCase();
 
-    // Profile modal
     document.getElementById('profileAvatarBig').textContent = firstName[0].toUpperCase();
     document.getElementById('profileNameBig').textContent   = currentUser.name || 'User';
     document.getElementById('profileEmail').textContent     = currentUser.email || 'user@truefitness.com';
     document.getElementById('profilePhone').textContent     = currentUser.phone || '—';
     document.getElementById('profilePlanBadge').textContent = 'Premium Member';
 
-    // Edit profile prefill
     document.getElementById('editName').value  = currentUser.name  || '';
     document.getElementById('editEmail').value = currentUser.email || '';
     document.getElementById('editPhone').value = currentUser.phone || '';
   }
 
-  // Try to load membership from backend
   await loadMembership();
+  await loadTrainer();
+  await loadDiet();
+  await loadGymPlan();
 
-  // Render all static sections
   renderWorkouts();
   renderClasses();
-  await loadDiet();
-  renderGoals();
   renderNotifs();
   renderOffers();
 }
 
 // ─────────────────────────────────────────────
-// LOAD MEMBERSHIP FROM BACKEND
+// LOAD MEMBERSHIP
 // ─────────────────────────────────────────────
 
 async function loadMembership() {
@@ -125,33 +81,243 @@ async function loadMembership() {
   const res = await API.get(`/gym/members/${currentUser.id}`);
   if (res && res.ok && res.data) {
     const m = res.data;
-    if (m.membership_plan || m.plan_type) {
-      document.getElementById('planType').textContent = m.membership_plan || m.plan_type || 'Premium';
-    }
+
+    // Plan type
+    const planVal = m.membership_plan || m.plan_type || 'Premium';
+    document.getElementById('planType').textContent = planVal;
+    document.getElementById('profilePlanType').textContent = planVal;
+
+    // Member since
     if (m.joined_at || m.created_at) {
       const d = new Date(m.joined_at || m.created_at);
-      document.getElementById('memberSince').textContent = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-      document.getElementById('profileSince').textContent = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+      const label = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+      document.getElementById('memberSince').textContent  = label;
+      document.getElementById('profileSince').textContent = label;
     }
+
+    // Renewal / expiry
     if (m.expiry_date || m.renewal_date) {
-      const exp = new Date(m.expiry_date || m.renewal_date);
-      document.getElementById('renewalDate').textContent = exp.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      const exp      = new Date(m.expiry_date || m.renewal_date);
       const daysLeft = Math.max(0, Math.ceil((exp - Date.now()) / 86400000));
-      document.getElementById('daysLeft').textContent = daysLeft + ' Days';
-      // progress bar: remaining / total (assume 365 day plan)
+      document.getElementById('renewalDate').textContent = exp.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('daysLeft').textContent    = daysLeft + ' Days';
+
       const pct = Math.max(5, Math.round((daysLeft / 365) * 100));
       document.getElementById('membershipProgress').style.width = pct + '%';
+
+      // Show warning if ≤ 30 days left
+      if (daysLeft <= 30) {
+        document.getElementById('expiryWarn').classList.add('show');
+      }
     }
-    if (m.trainer_name) {
-      document.getElementById('trainerName').textContent    = m.trainer_name;
-      document.getElementById('trainerInitial').textContent = m.trainer_name[0].toUpperCase();
-    }
+
+    // Expired badge
     if (m.membership_status === 'expired') {
-      document.getElementById('membershipBadge').textContent = 'Expired';
-      document.getElementById('membershipBadge').style.background = 'rgba(232,40,26,0.15)';
-      document.getElementById('membershipBadge').style.color      = '#f87171';
+      const badge = document.getElementById('membershipBadge');
+      badge.textContent        = 'Expired';
+      badge.style.background   = 'rgba(232,40,26,0.15)';
+      badge.style.color        = '#f87171';
     }
   }
+}
+
+// ─────────────────────────────────────────────
+// LOAD TRAINER
+// ─────────────────────────────────────────────
+
+async function loadTrainer() {
+  if (!currentUser) return;
+
+  // Try dedicated trainer endpoint first
+  let trainer = null;
+  const res = await API.get(`/trainers/my-trainer`);
+  if (res && res.ok && res.data) {
+    trainer = res.data.data || res.data;
+  }
+
+  // Fall back to membership data embedded trainer fields
+  if (!trainer) {
+    const mRes = await API.get(`/gym/members/${currentUser.id}`);
+    if (mRes && mRes.ok && mRes.data && mRes.data.trainer_name) {
+      trainer = {
+        name:           mRes.data.trainer_name,
+        specialization: mRes.data.trainer_spec || 'Strength & Conditioning',
+        experience:     mRes.data.trainer_exp  || '—',
+        phone:          mRes.data.trainer_phone|| '—',
+        sessions_per_week: mRes.data.sessions  || '—',
+      };
+    }
+  }
+
+  if (trainer) {
+    const tName = trainer.name || 'Not Assigned';
+    document.getElementById('trainerInitial').textContent = tName[0]?.toUpperCase() || '?';
+    document.getElementById('trainerName').textContent    = tName;
+    document.getElementById('trainerSpec').textContent    = trainer.specialization || '—';
+    document.getElementById('trainerExp').textContent     = trainer.experience
+      ? trainer.experience + (String(trainer.experience).includes('year') ? '' : ' years experience')
+      : '—';
+    document.getElementById('trainerSpecInfo').textContent    = trainer.specialization   || '—';
+    document.getElementById('trainerExpInfo').textContent     = trainer.experience
+      ? trainer.experience + (String(trainer.experience).includes('year') ? '' : ' yrs')
+      : '—';
+    document.getElementById('trainerSessions').textContent    = trainer.sessions_per_week
+      ? trainer.sessions_per_week + '/week'
+      : '—';
+    document.getElementById('trainerPhone').textContent       = trainer.phone || '—';
+  }
+}
+
+// ─────────────────────────────────────────────
+// LOAD DIET PLAN  (tabbed by day)
+// ─────────────────────────────────────────────
+
+const SLOT_ICONS = {
+  breakfast: '🌅', lunch: '☀️', dinner: '🌙',
+  snack: '🍎', 'pre-workout': '⚡', 'post-workout': '🥤',
+};
+
+async function loadDiet() {
+  if (!currentUser) return;
+
+  const res = await API.get(`/diet/${currentUser.id}`);
+  if (!res?.ok) {
+    document.getElementById('dietSlots').innerHTML = '<div class="diet-empty">No diet plan assigned yet.</div>';
+    return;
+  }
+
+  dietData = res.data?.data || res.data || [];
+
+  if (!dietData.length) {
+    document.getElementById('dietSlots').innerHTML = '<div class="diet-empty">No diet plan assigned yet.</div>';
+    return;
+  }
+
+  // Build tabs
+  const tabsEl = document.getElementById('dietTabs');
+  tabsEl.innerHTML = dietData.map((plan, i) => `
+    <button class="diet-tab ${i === 0 ? 'active' : ''}"
+            onclick="switchDietDay(${i}, this)">
+      ${plan.day}
+    </button>`).join('');
+
+  // Show first day
+  renderDietSlots(0);
+}
+
+function switchDietDay(index, btn) {
+  document.querySelectorAll('.diet-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderDietSlots(index);
+}
+
+function renderDietSlots(index) {
+  const plan  = dietData[index];
+  const slots = plan?.slots || [];
+  const el    = document.getElementById('dietSlots');
+
+  if (!slots.length) {
+    el.innerHTML = '<div class="diet-empty">No meals for this day.</div>';
+    document.getElementById('totalCals').textContent = '— kcal';
+    return;
+  }
+
+  let totalCals = 0;
+  el.innerHTML = slots.map(slot => {
+    const cals = parseInt(slot.calories || slot.kcal || 0);
+    totalCals += cals;
+    const icon  = SLOT_ICONS[slot.label?.toLowerCase()] || '🍽️';
+    const label = slot.label || 'Meal';
+    const time  = slot.time  || '';
+    const food  = slot.food_name || slot.food || '—';
+    return `
+      <div class="diet-slot">
+        <div class="diet-slot-icon">${icon}</div>
+        <div style="flex:1">
+          <div class="diet-slot-label">${label}</div>
+          ${time ? `<div class="diet-slot-time">🕐 ${time}</div>` : ''}
+          <div class="diet-slot-food">${food}</div>
+        </div>
+        ${cals ? `<div class="diet-slot-cals">${cals} kcal</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('totalCals').textContent = totalCals ? totalCals + ' kcal' : '— kcal';
+}
+
+// ─────────────────────────────────────────────
+// LOAD GYM PLAN  (collapsible days)
+// ─────────────────────────────────────────────
+
+async function loadGymPlan() {
+  if (!currentUser) return;
+  const el = document.getElementById('gymPlanBody');
+
+  const res = await API.get(`/gym-plans?user_id=${currentUser.id}`);
+  if (!res?.ok) {
+    el.innerHTML = '<div class="gym-plan-empty">No gym plan assigned yet.</div>';
+    return;
+  }
+
+  const plans = res.data?.data || res.data || [];
+  if (!plans.length) {
+    el.innerHTML = '<div class="gym-plan-empty">No gym plan assigned yet.</div>';
+    return;
+  }
+
+  // Aggregate all days across plans
+  const allDays = {};
+  plans.forEach(plan => {
+    const days = plan.days || {};
+    Object.keys(days).forEach(day => {
+      if (!allDays[day]) allDays[day] = [];
+      allDays[day].push(...(days[day] || []));
+    });
+  });
+
+  const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const sortedDays = Object.keys(allDays).sort(
+    (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)
+  );
+
+  if (!sortedDays.length) {
+    el.innerHTML = '<div class="gym-plan-empty">No exercises found in your plan.</div>';
+    return;
+  }
+
+  el.innerHTML = sortedDays.map((day, i) => {
+    const exercises = allDays[day];
+    const exHtml = exercises.map(ex => {
+      const sets = ex.sets ? `<span class="gym-ex-pill sets">${ex.sets} sets</span>` : '';
+      const reps = ex.reps ? `<span class="gym-ex-pill reps">${ex.reps} reps</span>` : '';
+      const rest = ex.rest ? `<span class="gym-ex-pill rest">Rest ${ex.rest}</span>` : '';
+      const dur  = ex.duration ? `<span class="gym-ex-pill">${ex.duration}</span>` : '';
+      return `
+        <div class="gym-ex-row">
+          <div class="gym-ex-name">${ex.name || ex.exercise || '—'}</div>
+          ${sets}${reps}${rest}${dur}
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="gym-plan-card">
+        <div class="gym-day-header ${i === 0 ? 'open' : ''}"
+             onclick="toggleGymDay(this)">
+          <span class="day-badge">${day}</span>
+          <span>${exercises.length} exercise${exercises.length !== 1 ? 's' : ''}</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="gym-exercises ${i === 0 ? 'open' : ''}">
+          ${exHtml}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleGymDay(header) {
+  header.classList.toggle('open');
+  const exEl = header.nextElementSibling;
+  exEl.classList.toggle('open');
 }
 
 // ─────────────────────────────────────────────
@@ -172,8 +338,8 @@ function renderWorkouts() {
     </div>`).join('');
 }
 
-// function addExercise() {
-  // const day  = document.getElementById('exDay').value;
+function addExercise() {
+  const day  = document.getElementById('exDay').value;
   const name = document.getElementById('exName').value.trim();
   const dur  = document.getElementById('exDur').value.trim();
   if (!day || !name) { showToast('Please select a day and enter exercise name'); return; }
@@ -183,7 +349,7 @@ function renderWorkouts() {
   document.getElementById('exName').value = '';
   document.getElementById('exDur').value  = '';
   showToast('Exercise added!', 'success');
-// }
+}
 
 function deleteWorkout(i) {
   workouts.splice(i, 1);
@@ -191,35 +357,6 @@ function deleteWorkout(i) {
   showToast('Exercise removed', 'success');
 }
 
-let workout = [];
-
-async function loadGymPlans() {
-  const res = await API.get("/gym-plans?user_id=123");
-
-  if (res?.ok) {
-    console.log("API DATA:", res.data);
-
-    const plans = res.data.data || res.data;
-
-    workouts = [];
-
-    plans.forEach(plan => {
-      const days = plan.days || {};
-
-      Object.keys(days).forEach(day => {
-        days[day].forEach(ex => {
-          workouts.push({
-            day: day,
-            name: ex.name,
-            dur: ex.reps || ex.sets || "-"
-          });
-        });
-      });
-    });
-
-    renderWorkouts();
-  }
-}
 // ─────────────────────────────────────────────
 // RENDER CLASSES
 // ─────────────────────────────────────────────
@@ -242,37 +379,10 @@ function renderClasses() {
 }
 
 // ─────────────────────────────────────────────
-// RENDER DIET
-// ─────────────────────────────────────────────
-
-
-
-// ─────────────────────────────────────────────
-// RENDER GOALS
-// ─────────────────────────────────────────────
-
-function renderGoals() {
-  const el = document.getElementById('goalsList');
-  if (!el) return;
-  el.innerHTML = goals.map(g => {
-    const pct = Math.min(100, Math.round((g.current / g.target) * 100));
-    return `
-    <div class="goal-item">
-      <div class="goal-top">
-        <span class="goal-name">${g.name}</span>
-        <span class="goal-val">${g.current}/${g.target} ${g.unit}</span>
-      </div>
-      <div class="goal-bar"><div class="goal-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join('');
-}
-
-// ─────────────────────────────────────────────
 // RENDER NOTIFICATIONS
 // ─────────────────────────────────────────────
 
 async function renderNotifs() {
-  // Try to load from backend first
   const res = await API.get('/notifications');
   if (res && res.ok && res.data.length) {
     const el = document.getElementById('notifBody');
@@ -289,7 +399,6 @@ async function renderNotifs() {
     }
     return;
   }
-  // Fallback to local
   const el = document.getElementById('notifBody');
   if (!el) return;
   el.innerHTML = notifs.map((n, i) => `
@@ -330,7 +439,6 @@ function openPanel(id) {
 
 function closePanel(id) {
   document.getElementById(id).classList.remove('open');
-  // Hide overlay only if no panels open
   const anyOpen = document.querySelectorAll('.panel.open').length > 0;
   if (!anyOpen) document.getElementById('panelOverlay').classList.remove('open');
 }
@@ -344,19 +452,11 @@ function closeAllPanels() {
 // MODAL HELPERS
 // ─────────────────────────────────────────────
 
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-// Close modal on backdrop click
 document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => {
-    if (e.target === o) o.classList.remove('open');
-  });
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
 });
 
 // ─────────────────────────────────────────────
@@ -369,10 +469,8 @@ async function saveProfile() {
   const phone = document.getElementById('editPhone').value.trim();
   if (!name) { showToast('Name is required'); return; }
 
-  // Try to update via backend
   const res = await API.put(`/auth/profile`, { name, email, phone });
   if (res && res.ok) {
-    // Update session
     const session = JSON.parse(localStorage.getItem('tf_user') || '{}');
     session.name  = name;
     session.email = email;
@@ -380,16 +478,15 @@ async function saveProfile() {
     localStorage.setItem('tf_user', JSON.stringify(session));
   }
 
-  // Update UI regardless
   const firstName = name.split(' ')[0];
-  document.getElementById('userFirstName').textContent  = firstName;
-  document.getElementById('profileNameBig').textContent = name;
+  document.getElementById('userFirstName').textContent    = firstName;
+  document.getElementById('profileNameBig').textContent   = name;
   document.getElementById('profileAvatarBig').textContent = firstName[0].toUpperCase();
-  document.getElementById('menuUserName').textContent   = name;
-  document.getElementById('menuAvatarInit').textContent = firstName[0].toUpperCase();
-  document.getElementById('profileEmail').textContent   = email || 'user@truefitness.com';
-  document.getElementById('profilePhone').textContent   = phone || '—';
-  document.getElementById('menuUserPhone').textContent  = phone || '—';
+  document.getElementById('menuUserName').textContent     = name;
+  document.getElementById('menuAvatarInit').textContent   = firstName[0].toUpperCase();
+  document.getElementById('profileEmail').textContent     = email || 'user@truefitness.com';
+  document.getElementById('profilePhone').textContent     = phone || '—';
+  document.getElementById('menuUserPhone').textContent    = phone || '—';
 
   closeModal('editProfileModal');
   showToast('Profile updated!', 'success');
@@ -450,39 +547,11 @@ function showToast(msg, type = 'error') {
   t._timer = setTimeout(() => t.remove(), 3000);
 }
 
-
 // ─────────────────────────────────────────────
 // START
 // ─────────────────────────────────────────────
-async function loadUserPlan() {
-  const userRes = await API.get('/users/me');
-  if (!userRes || !userRes.ok) return;
 
-  const user = userRes.data.data;
-  if (!user.plan_id) return;
-
-  const plansRes = await API.get('/plans');
-  const plans = plansRes.data.data;
-
-  const plan = plans.find(p => p.id == user.plan_id);
-  if (!plan) return;
-
-  document.getElementById("userPlanName").innerText = plan.name;
-  document.getElementById("userPlanPrice").innerText = "₹" + plan.price;
-  document.getElementById("userPlanDuration").innerText = plan.duration_days + " days";
-
-  const featuresList = document.getElementById("userPlanFeatures");
-  featuresList.innerHTML = (plan.features || [])
-    .map(f => `<li>✓ ${f}</li>`)
-    .join("");
-}
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   applySavedTheme();
   init();
-
-  // ✅ ADD THIS
-  loadUserPlan();
 });
-
-applySavedTheme();
-init();
