@@ -52,12 +52,6 @@ async function loadDiet() {
   });
 }
 
- 
-
-  const totalEl = document.getElementById("totalCals");
-if (totalEl) totalEl.textContent = totalCalories + " kcal";
-
-
 const goals = [
   { name: 'Workouts Completed', current: 4,  target: 5,  unit: 'sessions' },
   { name: 'Calories Burned',    current: 1800, target: 2500, unit: 'kcal' },
@@ -172,18 +166,6 @@ function renderWorkouts() {
     </div>`).join('');
 }
 
-// function addExercise() {
-  // const day  = document.getElementById('exDay').value;
-  const name = document.getElementById('exName').value.trim();
-  const dur  = document.getElementById('exDur').value.trim();
-  if (!day || !name) { showToast('Please select a day and enter exercise name'); return; }
-  workouts.push({ day, name, dur: dur || '—' });
-  renderWorkouts();
-  document.getElementById('exDay').value  = '';
-  document.getElementById('exName').value = '';
-  document.getElementById('exDur').value  = '';
-  showToast('Exercise added!', 'success');
-// }
 
 function deleteWorkout(i) {
   workouts.splice(i, 1);
@@ -323,7 +305,7 @@ function renderOffers() {
 // PANEL HELPERS
 // ─────────────────────────────────────────────
 
-function openPanel(id) {
+window.openPanel = function(id) {
   document.getElementById('panelOverlay').classList.add('open');
   document.getElementById(id).classList.add('open');
 }
@@ -484,5 +466,3 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUserPlan();
 });
 
-applySavedTheme();
-init();
