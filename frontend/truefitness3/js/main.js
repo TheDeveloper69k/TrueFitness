@@ -321,11 +321,14 @@ function openLightbox(el) {
   const lb = document.getElementById('lightbox');
   lb.style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => lb.classList.add('active'));
 }
 
 function closeLightbox() {
-  document.getElementById('lightbox').style.display = 'none';
+  const lb = document.getElementById('lightbox');
+  lb.classList.remove('active');
   document.body.style.overflow = '';
+  setTimeout(() => { lb.style.display = 'none'; }, 300);
 }
 
 document.addEventListener('keydown', e => {

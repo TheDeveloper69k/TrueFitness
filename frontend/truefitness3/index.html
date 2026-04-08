@@ -592,6 +592,25 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    /* ── LIGHTBOX ANIMATION ── */
+    #lightbox {
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    #lightbox.active {
+      opacity: 1;
+    }
+
+    #lightboxImg {
+      transform: scale(0.85);
+      transition: transform 0.3s ease;
+    }
+
+    #lightbox.active #lightboxImg {
+      transform: scale(1);
+    }
   </style>
 </head>
 
