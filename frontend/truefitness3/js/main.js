@@ -300,6 +300,7 @@ function selectPlan(planId) {
   localStorage.setItem("selectedPlan", planId);
   openModal("loginModal");  // ← change signupModal to loginModal
 }
+
 window.addEventListener('scroll', () => {
   const sections = ['home', 'about', 'trainers', 'plans', 'gallery', 'contact'];
   sections.forEach(id => {
@@ -308,9 +309,18 @@ window.addEventListener('scroll', () => {
     const rect = el.getBoundingClientRect();
     const link = document.querySelector(`.nav-links a[href="#${id}"]`);
     if (!link) return;
-    if (rect.top <= 80 && rect.bottom > 80) {
-      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-      link.classList.add('active');
+
+    // Special handling for contact (footer)
+    if (id === 'contact') {
+      if (rect.top <= 200) {
+        document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    } else {
+      if (rect.top <= 80 && rect.bottom > 80) {
+        document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
     }
   });
 });
