@@ -690,3 +690,14 @@ footer { background: #050505; border-top: 1px solid var(--border); padding: 70px
   .footer-grid { grid-template-columns: 1fr; }
   .plans-grid { grid-template-columns: 1fr; }
 }
+.social-row a:hover {
+  color: #e8281a;
+}
+
+.social-row img {
+  transition: transform 0.3s;
+}
+
+.social-row img:hover {
+  transform: scale(1.1);
+}
