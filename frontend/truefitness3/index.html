@@ -938,7 +938,23 @@
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" id="loginPass" placeholder="Enter your password" />
+          <div style="position:relative">
+            <input type="password" id="loginPass" placeholder="Enter your password"
+              style="padding-right:44px;width:100%" />
+            <button type="button" onclick="togglePass('loginPass', this)" style="
+      position:absolute;
+      right:12px;
+      top:50%;
+      transform:translateY(-50%);
+      background:none;
+      border:none;
+      cursor:pointer;
+      color:var(--muted);
+      font-size:18px;
+      padding:0;
+      line-height:1;
+    ">👁</button>
+          </div>
         </div>
         <div id="loginErr" style="color:#f87171;font-size:12px;margin-bottom:10px;display:none"></div>
         <button class="modal-submit" onclick="handleLogin()">Login</button>
