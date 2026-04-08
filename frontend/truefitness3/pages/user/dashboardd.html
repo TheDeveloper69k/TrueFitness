@@ -4,11 +4,303 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>True Fitness — Member Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../css/user-dashboard.css"/>
 <style>
-/* ── EXTRA STYLES FOR NEW SECTIONS ── */
+/* ─────────────────────────────────────────
+   FONT OVERRIDE — smoother across the board
+───────────────────────────────────────── */
+*, *::before, *::after {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
 
-/* Gym Plan Section */
+/* Topbar name slightly lighter */
+.topbar-name { font-weight: 500 !important; letter-spacing: 0.04em !important; }
+
+/* Page header — smoother weight */
+.page-header h1 {
+  font-weight: 500 !important;
+  letter-spacing: -0.03em !important;
+  font-size: clamp(22px, 3vw, 30px) !important;
+}
+.page-header p {
+  font-weight: 300 !important;
+  letter-spacing: 0em !important;
+  opacity: 0.55;
+}
+
+/* Section card headings */
+.sc-header h3 {
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+  font-size: 14px !important;
+}
+
+/* Membership labels */
+.mem-label { font-weight: 400 !important; font-size: 12px !important; opacity: 0.45; }
+.mem-val   { font-weight: 500 !important; font-size: 13px !important; }
+
+/* Trainer name */
+.trainer-name { font-weight: 500 !important; letter-spacing: -0.02em !important; }
+
+/* Workout day labels */
+.workout-day { font-size: 11px !important; font-weight: 500 !important; letter-spacing: 0.04em !important; }
+.workout-name { font-weight: 500 !important; font-size: 13px !important; }
+.workout-dur  { font-size: 11px !important; font-weight: 400 !important; opacity: 0.4; }
+
+/* Diet labels */
+.diet-slot-label { font-weight: 600 !important; letter-spacing: 0.04em !important; }
+.diet-slot-food  { font-weight: 500 !important; }
+
+/* Gym plan */
+.gym-day-header { font-weight: 500 !important; letter-spacing: -0.01em !important; }
+.gym-ex-name    { font-weight: 500 !important; }
+
+/* Mono for numbers/codes */
+.mem-val.accent, #daysLeft, #totalCals {
+  font-family: 'DM Mono', monospace !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+}
+
+
+/* ─────────────────────────────────────────
+   PAGE LOAD — staggered fade-up entrance
+───────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.05s;
+}
+.two-col:nth-of-type(1) {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.12s;
+}
+.two-col:nth-of-type(2) {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.2s;
+}
+/* Diet plan row (full-width section-card after the two-cols) */
+.main-content > .section-card {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.28s;
+}
+
+
+/* ─────────────────────────────────────────
+   SECTION CARDS — smoother hover lift
+───────────────────────────────────────── */
+.section-card {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.section-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35) !important;
+}
+
+
+/* ─────────────────────────────────────────
+   MEMBERSHIP PROGRESS BAR — smooth fill
+───────────────────────────────────────── */
+.progress-fill {
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+
+/* ─────────────────────────────────────────
+   WORKOUT ROWS — subtle slide-in on load
+───────────────────────────────────────── */
+@keyframes slideInRow {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.workout-item {
+  animation: slideInRow 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background 0.2s ease, padding-left 0.2s ease !important;
+}
+.workout-item:nth-child(1) { animation-delay: 0.22s; }
+.workout-item:nth-child(2) { animation-delay: 0.27s; }
+.workout-item:nth-child(3) { animation-delay: 0.32s; }
+.workout-item:nth-child(4) { animation-delay: 0.37s; }
+.workout-item:nth-child(5) { animation-delay: 0.42s; }
+.workout-item:nth-child(6) { animation-delay: 0.47s; }
+.workout-item:nth-child(7) { animation-delay: 0.52s; }
+
+
+/* ─────────────────────────────────────────
+   GYM PLAN ACCORDION — smooth open/close
+───────────────────────────────────────── */
+.gym-exercises {
+  overflow: hidden;
+  max-height: 0;
+  display: flex !important; /* override the display:none toggle */
+  opacity: 0;
+  transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity    0.3s ease !important;
+}
+.gym-exercises.open {
+  max-height: 600px !important;
+  opacity: 1 !important;
+}
+.gym-day-header {
+  transition: background 0.2s ease, transform 0.15s ease !important;
+}
+.gym-day-header:active { transform: scale(0.985) !important; }
+
+
+/* ─────────────────────────────────────────
+   DIET TABS — smooth active pill slide
+───────────────────────────────────────── */
+.diet-tab {
+  transition: background 0.22s ease, color 0.22s ease,
+              border-color 0.22s ease, transform 0.15s ease !important;
+}
+.diet-tab:hover { transform: translateY(-1px) !important; }
+.diet-tab:active { transform: scale(0.96) !important; }
+
+.diet-slot {
+  transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.diet-slot:hover { transform: translateX(3px) !important; }
+
+
+/* ─────────────────────────────────────────
+   BUTTONS — snappier press feel
+───────────────────────────────────────── */
+.add-btn, .trainer-contact-btn {
+  transition: background 0.2s ease, transform 0.15s ease,
+              box-shadow 0.2s ease !important;
+}
+.add-btn:hover, .trainer-contact-btn:hover {
+  transform: translateY(-1px) !important;
+}
+.add-btn:active, .trainer-contact-btn:active {
+  transform: scale(0.97) !important;
+}
+
+
+/* ─────────────────────────────────────────
+   TOPBAR — subtle slide-down entrance
+───────────────────────────────────────── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.topbar {
+  animation: slideDown 0.4s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+
+/* ─────────────────────────────────────────
+   PANELS — smoother slide-in
+───────────────────────────────────────── */
+.panel {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity   0.3s ease !important;
+}
+
+
+/* ─────────────────────────────────────────
+   MODALS — fade + scale entrance
+───────────────────────────────────────── */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+.modal {
+  animation: modalIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+
+/* ─────────────────────────────────────────
+   TRAINER INFO ITEMS — stagger on load
+───────────────────────────────────────── */
+.trainer-info-item {
+  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background 0.2s ease !important;
+}
+.trainer-info-item:nth-child(1) { animation-delay: 0.18s; }
+.trainer-info-item:nth-child(2) { animation-delay: 0.22s; }
+.trainer-info-item:nth-child(3) { animation-delay: 0.26s; }
+
+
+/* ─────────────────────────────────────────
+   HELP BUTTON — idle pulse
+───────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 40, 26, 0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(232, 40, 26, 0);  }
+}
+.help-btn {
+  animation: pulse 2.8s ease-in-out infinite !important;
+  transition: transform 0.2s ease !important;
+}
+.help-btn:hover { transform: scale(1.1) !important; }
+
+
+/* ─────────────────────────────────────────
+   TOAST — smoother slide-up
+───────────────────────────────────────── */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.toast { animation: toastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both !important; }
+
+
+/* ─────────────────────────────────────────
+   SHIMMER SKELETON — softer pulse
+───────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.sk {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: shimmer 1.8s ease-in-out infinite !important;
+  border-radius: 6px !important;
+}
+
+
+/* ─────────────────────────────────────────
+   MENU ITEMS — hover slide right
+───────────────────────────────────────── */
+.menu-item {
+  transition: background 0.18s ease, padding-left 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.menu-item:hover { padding-left: calc(var(--menu-item-pl, 12px) + 4px) !important; }
+
+
+/* ─────────────────────────────────────────
+   TOGGLE SWITCH — bouncy spring
+───────────────────────────────────────── */
+.toggle-switch {
+  transition: background 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.toggle-switch::after {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+
+/* ─────────────────────────────────────────
+   GYM PLAN CARD — Gym Plan Section
+───────────────────────────────────────── */
 .gym-plan-card { margin-bottom: 8px; }
 .gym-day-header {
   display: flex; align-items: center; gap: 10px;
@@ -16,126 +308,90 @@
   background: rgba(232,40,26,0.08);
   border-radius: 10px;
   cursor: pointer;
-  font-weight: 700; font-size: 13px; color: var(--accent, #e8281a);
-  transition: background 0.2s;
+  font-weight: 500; font-size: 13px; color: var(--accent, #e8281a);
 }
-.gym-day-header:hover { background: rgba(232,40,26,0.15); }
 .gym-day-header .day-badge {
   background: var(--accent, #e8281a);
   color: #fff; border-radius: 6px;
-  padding: 2px 9px; font-size: 11px; font-weight: 800;
+  padding: 2px 9px; font-size: 11px; font-weight: 600;
 }
-.gym-day-header .arrow { margin-left: auto; transition: transform 0.2s; }
+.gym-day-header .arrow { margin-left: auto; transition: transform 0.35s cubic-bezier(0.22,1,0.36,1); }
 .gym-day-header.open .arrow { transform: rotate(180deg); }
-.gym-exercises {
-  display: none; flex-direction: column; gap: 6px;
-  padding: 8px 0 4px 14px;
-}
-.gym-exercises.open { display: flex; }
+
 .gym-ex-row {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px;
   background: rgba(255,255,255,0.03);
   border-radius: 8px; border-left: 3px solid var(--accent, #e8281a);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
-.gym-ex-name { font-size: 13px; font-weight: 600; flex: 1; }
+.gym-ex-row:hover { background: rgba(255,255,255,0.05); transform: translateX(2px); }
+.gym-ex-name { font-size: 13px; font-weight: 500; flex: 1; }
 .gym-ex-pill {
   font-size: 11px; padding: 2px 8px;
-  border-radius: 20px; font-weight: 700;
+  border-radius: 20px; font-weight: 600;
   background: rgba(232,40,26,0.15); color: var(--accent, #e8281a);
 }
-.gym-ex-pill.sets  { background: rgba(59,130,246,0.15); color: #60a5fa; }
-.gym-ex-pill.reps  { background: rgba(34,197,94,0.15);  color: #4ade80; }
-.gym-ex-pill.rest  { background: rgba(234,179,8,0.15);  color: #facc15; }
+.gym-ex-pill.sets { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.gym-ex-pill.reps { background: rgba(34,197,94,0.15);  color: #4ade80; }
+.gym-ex-pill.rest { background: rgba(234,179,8,0.15);  color: #facc15; }
 
-/* Diet Plan Section */
-.diet-tabs {
-  display: flex; gap: 6px; overflow-x: auto;
-  padding-bottom: 6px; margin-bottom: 12px;
-  scrollbar-width: none;
-}
+
+/* ─────────────────────────────────────────
+   DIET PLAN SECTION
+───────────────────────────────────────── */
+.diet-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
 .diet-tabs::-webkit-scrollbar { display: none; }
 .diet-tab {
   flex-shrink: 0; padding: 5px 14px;
-  border-radius: 20px; font-size: 12px; font-weight: 700;
+  border-radius: 20px; font-size: 12px; font-weight: 500;
   cursor: pointer; border: 1.5px solid rgba(255,255,255,0.1);
   background: transparent; color: rgba(255,255,255,0.5);
-  transition: all 0.2s;
 }
-.diet-tab.active {
-  background: var(--accent, #e8281a);
-  border-color: var(--accent, #e8281a);
-  color: #fff;
-}
+.diet-tab.active { background: var(--accent, #e8281a); border-color: var(--accent, #e8281a); color: #fff; }
 .diet-slot {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 10px 12px;
   background: rgba(255,255,255,0.03);
   border-radius: 10px; margin-bottom: 8px;
   border-left: 3px solid transparent;
-  transition: border-color 0.2s;
 }
-.diet-slot:hover { border-color: var(--accent, #e8281a); }
-.diet-slot-icon {
-  font-size: 20px; width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(232,40,26,0.1); border-radius: 8px; flex-shrink: 0;
-}
-.diet-slot-label { font-size: 11px; font-weight: 700; color: var(--accent, #e8281a); text-transform: uppercase; letter-spacing: 0.5px; }
+.diet-slot-icon { font-size: 20px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(232,40,26,0.1); border-radius: 8px; flex-shrink: 0; }
+.diet-slot-label { font-size: 11px; font-weight: 600; color: var(--accent, #e8281a); text-transform: uppercase; letter-spacing: 0.5px; }
 .diet-slot-time  { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-.diet-slot-food  { font-size: 13px; font-weight: 600; margin-top: 2px; }
-.diet-slot-cals  {
-  margin-left: auto; font-size: 12px; font-weight: 800;
-  color: var(--accent, #e8281a); flex-shrink: 0;
-  padding-top: 2px;
-}
-.diet-empty {
-  text-align: center; padding: 24px; color: rgba(255,255,255,0.3);
-  font-size: 13px;
-}
+.diet-slot-food  { font-size: 13px; font-weight: 500; margin-top: 2px; }
+.diet-slot-cals  { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--accent, #e8281a); flex-shrink: 0; padding-top: 2px; font-family: 'DM Mono', monospace; }
+.diet-empty { text-align: center; padding: 24px; color: rgba(255,255,255,0.3); font-size: 13px; }
 
-/* Trainer Section */
+
+/* ─────────────────────────────────────────
+   TRAINER SECTION
+───────────────────────────────────────── */
 .trainer-card-body { display: flex; align-items: center; gap: 16px; padding: 4px 0 12px; }
-.trainer-avatar-lg {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--accent, #e8281a);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; font-weight: 800; color: #fff; flex-shrink: 0;
-}
+.trainer-avatar-lg { width: 56px; height: 56px; border-radius: 50%; background: var(--accent, #e8281a); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; color: #fff; flex-shrink: 0; }
 .trainer-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
 .trainer-info-item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px 10px; }
-.trainer-info-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-.trainer-info-val   { font-size: 13px; font-weight: 700; }
+.trainer-info-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-weight: 500; }
+.trainer-info-val   { font-size: 13px; font-weight: 500; }
 .trainer-contact-btn {
   margin-top: 12px; width: 100%; padding: 9px;
   background: rgba(232,40,26,0.12); border: 1.5px solid rgba(232,40,26,0.3);
   color: var(--accent, #e8281a); border-radius: 10px;
-  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  font-size: 13px; font-weight: 500; cursor: pointer;
 }
-.trainer-contact-btn:hover { background: rgba(232,40,26,0.25); }
 
-/* Membership Progress */
-.membership-expiry-warn {
-  margin-top: 10px; padding: 8px 12px;
-  background: rgba(232,40,26,0.1); border-radius: 8px;
-  font-size: 12px; color: rgba(255,160,140,0.9); display: none;
-}
+
+/* ─────────────────────────────────────────
+   MEMBERSHIP EXPIRY WARNING
+───────────────────────────────────────── */
+.membership-expiry-warn { margin-top: 10px; padding: 8px 12px; background: rgba(232,40,26,0.1); border-radius: 8px; font-size: 12px; color: rgba(255,160,140,0.9); display: none; }
 .membership-expiry-warn.show { display: block; }
 
-/* Loading skeleton */
-.sk {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 6px; height: 14px;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* Gym plan empty */
-.gym-plan-empty {
-  text-align: center; padding: 24px; color: rgba(255,255,255,0.3);
-  font-size: 13px;
-}
+/* ─────────────────────────────────────────
+   SKELETON / LOADING
+───────────────────────────────────────── */
+.gym-plan-empty { text-align: center; padding: 24px; color: rgba(255,255,255,0.3); font-size: 13px; font-weight: 400; }
 </style>
 </head>
 <body>
@@ -191,7 +447,7 @@
         <div class="trainer-card-body">
           <div class="trainer-avatar-lg" id="trainerInitial">—</div>
           <div>
-            <div class="trainer-name" id="trainerName" style="font-size:14px;font-weight:800;">Not Assigned</div>
+            <div class="trainer-name" id="trainerName" style="font-size:14px;font-weight:500;">Not Assigned</div>
             <div class="trainer-spec" id="trainerSpec" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">—</div>
             <div class="trainer-exp" style="font-size:12px;margin-top:4px;">⭐ <span id="trainerExp">—</span></div>
           </div>
@@ -391,7 +647,7 @@
       <button class="modal-close-btn" onclick="closeModal('themeModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="font-size:13px;font-weight:700;margin-bottom:10px">🌙 Theme Mode</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px">🌙 Theme Mode</div>
       <div class="theme-modes">
         <div class="theme-mode-btn selected" id="darkModeBtn"  onclick="setTheme('dark')">
           <div class="theme-mode-name">🌙 Dark Mode</div>
@@ -402,7 +658,7 @@
           <div class="theme-mode-desc">Light theme with bright backgrounds</div>
         </div>
       </div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:10px">🎨 Accent Color</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px">🎨 Accent Color</div>
       <div class="color-grid">
         <div class="color-btn selected" style="background:#e8281a" onclick="setAccent('#e8281a','#b81f14',this)">Red</div>
         <div class="color-btn" style="background:#3b82f6" onclick="setAccent('#3b82f6','#1d4ed8',this)">Blue</div>
@@ -413,7 +669,7 @@
         <div class="color-btn" style="background:#06b6d4" onclick="setAccent('#06b6d4','#0891b2',this)">Cyan</div>
         <div class="color-btn" style="background:#eab308" onclick="setAccent('#eab308','#ca8a04',this)">Yellow</div>
       </div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:10px">Preview</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px">Preview</div>
       <div class="theme-preview">
         <div class="preview-card-inner">
           <div class="preview-dot"></div>
