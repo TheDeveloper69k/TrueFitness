@@ -560,6 +560,38 @@
         background: linear-gradient(to bottom, rgba(10, 10, 10, 0.7) 0%, rgba(10, 10, 10, 0.4) 50%, rgba(10, 10, 10, 0.8) 100%);
       }
     }
+
+    /* ── GALLERY ── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      height: 220px;
+      border: 1px solid var(--border);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
 </head>
 
@@ -578,6 +610,7 @@
         <li><a href="#trainers">Trainers</a></li>
         <li><a href="#plans">Plans</a></li>
         <li><a href="#contact">Contact</a></li>
+        <li><a href="#gallery">Gallery</a></li>
       </ul>
       <div class="nav-actions">
         <button class="nav-login" onclick="openModal('loginModal')">Login</button>
@@ -811,6 +844,22 @@
       </div>
       <div class="footer-bottom">© 2026 True Fitness. All rights reserved.</div>
     </div>
+    <!-- GALLERY -->
+    <section class="section" id="gallery">
+      <div class="container">
+        <div class="section-label">Gallery</div>
+        <h2 class="section-title">Our Gym</h2>
+        <p class="section-desc">Take a look inside True Fitness.</p>
+        <div class="gallery-grid">
+          <div class="gallery-item"><img src="../Assets/photo1.jpg" alt="Gym Photo" /></div>
+          <div class="gallery-item"><img src="../Assets/photo2.jpg" alt="Gym Photo" /></div>
+          <div class="gallery-item"><img src="../Assets/photo3.jpg" alt="Gym Photo" /></div>
+          <div class="gallery-item"><img src="../Assets/photo4.jpg" alt="Gym Photo" /></div>
+          <div class="gallery-item"><img src="../Assets/photo5.jpg" alt="Gym Photo" /></div>
+          <div class="gallery-item"><img src="../Assets/photo6.jpg" alt="Gym Photo" /></div>
+        </div>
+      </div>
+    </section>
   </footer>
 
   <!-- ── LOGIN MODAL ── -->
