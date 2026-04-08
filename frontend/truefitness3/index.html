@@ -609,8 +609,8 @@
         <li><a href="#about">About</a></li>
         <li><a href="#trainers">Trainers</a></li>
         <li><a href="#plans">Plans</a></li>
-        <li><a href="#contact">Contact</a></li>
         <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
       </ul>
       <div class="nav-actions">
         <button class="nav-login" onclick="openModal('loginModal')">Login</button>
@@ -760,6 +760,66 @@
     </div>
   </section>
 
+  <!-- GALLERY -->
+  <section class="section" id="gallery">
+    <div class="container">
+      <div class="section-label">Gallery</div>
+      <h2 class="section-title">Our Gym</h2>
+      <p class="section-desc">Take a look inside True Fitness.</p>
+      <div class="gallery-grid">
+        <div class="gallery-item" onclick="openLightbox(this)">
+          <img src="../Assets/GYM1.jpg" alt="Gym Photo" />
+        </div>
+        <div class="gallery-item" onclick="openLightbox(this)">
+          <img src="../Assets/GYM2.jpg" alt="Gym Photo" />
+        </div>
+        <div class="gallery-item" onclick="openLightbox(this)">
+          <img src="../Assets/GYM3.jpg" alt="Gym Photo" />
+        </div>
+        <div class="gallery-item" onclick="openLightbox(this)">
+          <img src="../Assets/GYM4.jpg" alt="Gym Photo" />
+        </div>
+        <div class="gallery-item" onclick="openLightbox(this)">
+          <img src="../Assets/GYM5.jpg" alt="Gym Photo" />
+        </div>
+        <div class="gallery-item" onclick="openLightbox(this)">
+          <img src="../Assets/GYM6.jpg" alt="Gym Photo" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox" onclick="closeLightbox()" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.92);
+  z-index:99999;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(6px);
+">
+    <img id="lightboxImg" src="" style="
+    max-width:90vw;
+    max-height:90vh;
+    border-radius:12px;
+    box-shadow:0 0 40px rgba(0,0,0,0.8);
+    object-fit:contain;
+  " />
+    <button onclick="closeLightbox()" style="
+    position:fixed;
+    top:20px;
+    right:28px;
+    background:none;
+    border:none;
+    color:#fff;
+    font-size:32px;
+    cursor:pointer;
+    z-index:100000;
+  ">✕</button>
+  </div>
+
   <!-- FOOTER -->
   <footer id="contact">
     <div class="container">
@@ -844,22 +904,6 @@
       </div>
       <div class="footer-bottom">© 2026 True Fitness. All rights reserved.</div>
     </div>
-    <!-- GALLERY -->
-    <section class="section" id="gallery">
-      <div class="container">
-        <div class="section-label">Gallery</div>
-        <h2 class="section-title">Our Gym</h2>
-        <p class="section-desc">Take a look inside True Fitness.</p>
-        <div class="gallery-grid">
-          <div class="gallery-item"><img src="../Assets/GYM1.webp" alt="Gym Photo" /></div>
-          <div class="gallery-item"><img src="../Assets/GYM2.webp" alt="Gym Photo" /></div>
-          <div class="gallery-item"><img src="../Assets/GYM3.webp" alt="Gym Photo" /></div>
-          <div class="gallery-item"><img src="../Assets/GYM4.webp" alt="Gym Photo" /></div>
-          <div class="gallery-item"><img src="../Assets/GYM5.webp" alt="Gym Photo" /></div>
-          <div class="gallery-item"><img src="../Assets/GYM6.webp" alt="Gym Photo" /></div>
-        </div>
-      </div>
-    </section>
   </footer>
 
   <!-- ── LOGIN MODAL ── -->

@@ -96,13 +96,13 @@ function switchToLogin() {
 // ─────────────────────────────────────────────
 
 function showReset() {
-  document.getElementById('loginForm').style.display  = 'none';
-  document.getElementById('resetForm').style.display  = 'block';
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('resetForm').style.display = 'block';
 }
 
 function hideReset() {
-  document.getElementById('loginForm').style.display  = 'block';
-  document.getElementById('resetForm').style.display  = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('resetForm').style.display = 'none';
 }
 
 // ─────────────────────────────────────────────
@@ -114,28 +114,28 @@ async function sendOtp() {
   if (!phone) { showToast('Enter your phone number first.'); return; }
   const btn = document.querySelector('#resetForm .otp-btn');
   btn.textContent = 'Sending…';
-  btn.disabled    = true;
+  btn.disabled = true;
   const res = await sendForgotPasswordOTP(phone);
   btn.textContent = 'Send OTP';
-  btn.disabled    = false;
+  btn.disabled = false;
   showToast(res.msg, res.ok ? 'success' : 'error');
 }
 
 async function sendOtpSignup() {
-  const phone    = document.getElementById('signupPhone').value.trim();
-  const name     = document.getElementById('signupName').value.trim();
+  const phone = document.getElementById('signupPhone').value.trim();
+  const name = document.getElementById('signupName').value.trim();
   const password = document.getElementById('signupPass').value.trim();
 
-  if (!name)     { showToast('Enter your full name first.');    return; }
-  if (!phone)    { showToast('Enter your phone number first.'); return; }
-  if (!password) { showToast('Enter your password first.');     return; }
+  if (!name) { showToast('Enter your full name first.'); return; }
+  if (!phone) { showToast('Enter your phone number first.'); return; }
+  if (!password) { showToast('Enter your password first.'); return; }
 
   const btn = document.querySelector('#signupModal .otp-btn');
   btn.textContent = 'Sending…';
-  btn.disabled    = true;
+  btn.disabled = true;
   const res = await sendRegisterOTP(phone, name, password);
   btn.textContent = 'Send OTP';
-  btn.disabled    = false;
+  btn.disabled = false;
   showToast(res.msg, res.ok ? 'success' : 'error');
 }
 
@@ -145,18 +145,18 @@ async function sendOtpSignup() {
 
 async function handleLogin() {
   const phone = document.getElementById('loginPhone').value;
-  const pass  = document.getElementById('loginPass').value;
-  const err   = document.getElementById('loginErr');
-  const btn   = document.querySelector('#loginForm .modal-submit');
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  const btn = document.querySelector('#loginForm .modal-submit');
 
   err.style.display = 'none';
-  btn.textContent   = 'Logging in…';
-  btn.disabled      = true;
+  btn.textContent = 'Logging in…';
+  btn.disabled = true;
 
   const res = await login(phone, pass);
 
   btn.textContent = 'Login';
-  btn.disabled    = false;
+  btn.disabled = false;
 
   if (res.ok) {
     closeModal('loginModal');
@@ -167,7 +167,7 @@ async function handleLogin() {
       else location.href = 'pages/user/dashboardd.html';
     }, 600);
   } else {
-    err.textContent   = res.msg;
+    err.textContent = res.msg;
     err.style.display = 'block';
   }
 }
@@ -175,8 +175,8 @@ async function handleLogin() {
 document.addEventListener('DOMContentLoaded', () => {
   ['loginPhone', 'loginPass'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('keydown', e => { 
-      if (e.key === 'Enter') handleLogin(); 
+    if (el) el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin();
     });
   });
 
@@ -189,30 +189,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─────────────────────────────────────────────
 
 async function handleSignup() {
-  const name    = document.getElementById('signupName').value;
-  const phone   = document.getElementById('signupPhone').value;
-  const pass    = document.getElementById('signupPass').value;
+  const name = document.getElementById('signupName').value;
+  const phone = document.getElementById('signupPhone').value;
+  const pass = document.getElementById('signupPass').value;
   const confirm = document.getElementById('signupConfirm').value;
-  const err     = document.getElementById('signupErr');
+  const err = document.getElementById('signupErr');
 
   err.style.display = 'none';
 
   if (pass !== confirm) {
-    err.textContent   = 'Passwords do not match.';
+    err.textContent = 'Passwords do not match.';
     err.style.display = 'block';
     return;
   }
 
   const btn = document.querySelector('#signupModal .modal-submit');
   btn.textContent = 'Creating account…';
-  btn.disabled    = true;
+  btn.disabled = true;
 
- const planId = localStorage.getItem("selectedPlan");
+  const planId = localStorage.getItem("selectedPlan");
 
-const res = await signup(name, phone, pass, planId);
+  const res = await signup(name, phone, pass, planId);
 
   btn.textContent = 'Sign Up';
-  btn.disabled    = false;
+  btn.disabled = false;
 
   if (res.ok) {
     closeModal('signupModal');
@@ -223,7 +223,7 @@ const res = await signup(name, phone, pass, planId);
       else location.href = 'pages/user/dashboardd.html';
     }, 600);
   } else {
-    err.textContent   = res.msg;
+    err.textContent = res.msg;
     err.style.display = 'block';
   }
 }
@@ -234,9 +234,9 @@ const res = await signup(name, phone, pass, planId);
 
 async function handleReset() {
   const phone = document.getElementById('resetPhone').value;
-  const otp   = document.getElementById('resetOtp') ? document.getElementById('resetOtp').value : '';
-  const np    = document.getElementById('newPass').value;
-  const cp    = document.getElementById('confirmPass').value;
+  const otp = document.getElementById('resetOtp') ? document.getElementById('resetOtp').value : '';
+  const np = document.getElementById('newPass').value;
+  const cp = document.getElementById('confirmPass').value;
 
   if (!np || np !== cp) {
     showToast('Passwords do not match.');
@@ -301,7 +301,7 @@ function selectPlan(planId) {
   openModal("loginModal");  // ← change signupModal to loginModal
 }
 window.addEventListener('scroll', () => {
-  const sections = ['home', 'about', 'trainers', 'plans', 'contact'];
+  const sections = ['home', 'about', 'trainers', 'plans', 'gallery', 'contact'];
   sections.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -313,4 +313,21 @@ window.addEventListener('scroll', () => {
       link.classList.add('active');
     }
   });
+});
+
+function openLightbox(el) {
+  const src = el.querySelector('img').src;
+  document.getElementById('lightboxImg').src = src;
+  const lb = document.getElementById('lightbox');
+  lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
 });
