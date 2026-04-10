@@ -182,17 +182,19 @@
     }
 
     .trainer-img {
-      height: 220px;
+      height: 380px;
       position: relative;
       overflow: hidden
+      
     }
 
     .trainer-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s
-    }
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transition: transform 0.3s
+}
 
     .trainer-card:hover .trainer-img img {
       transform: scale(1.05)
@@ -211,9 +213,10 @@
     }
 
     .trainer-tag h4 {
-      font-size: 16px;
-      font-weight: 700
-    }
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--red)
+}
 
     .trainer-tag p {
       font-size: 12px;
@@ -699,23 +702,40 @@
   <section class="section trainers" id="trainers">
     <div class="container">
       <h2 class="section-title">Meet Our Gym Trainer</h2>
-      <p class="section-desc">World-class certified trainers dedicated to your transformation journey.</p>
-      <div class="trainers-grid">
-        <div class="trainer-card">
-          <div class="trainer-img">
-            <img src="../Assets/manoj.webp" alt="Manoj" />
-            <div class="trainer-overlay"></div>
-            <div class="trainer-tag">
-              <h4>Manoj</h4>
-              <p>CrossFit, HIIT</p>
-            </div>
-          </div>
-          <div class="trainer-body">
-            <div class="trainer-meta"><span>45 members</span><span class="trainer-star"></span></div>
-            <button class="trainer-cta" onclick="openModal('loginModal')">Get Started</button>
-          </div>
-        </div>
+      <p class="section-desc">certified trainers dedicated to your transformation journey.</p>
+     <div class="trainers-grid">
+
+  <div class="trainer-card">
+    <div class="trainer-img">
+     <img src="../Assets/manoj.webp" alt="Manoj" style="object-position: center 20%;" />
+      <div class="trainer-overlay"></div>
+      <div class="trainer-tag">
+        <h4>Manoj</h4>
+        <p></p>
       </div>
+    </div>
+    <div class="trainer-body">
+      <div class="trainer-meta"><span>45 members</span><span class="trainer-star"></span></div>
+      <button class="trainer-cta" onclick="openModal('loginModal')">Get Started</button>
+    </div>
+  </div>
+
+  <div class="trainer-card">
+    <div class="trainer-img">
+      <img src="../Assets/gaurav.webp" alt="Gaurav" style="object-position: center 15%;" />
+      <div class="trainer-overlay"></div>
+      <div class="trainer-tag">
+        <h4>Gaurav</h4>
+        <p></p>
+      </div>
+    </div>
+    <div class="trainer-body">
+      <div class="trainer-meta"><span>30 members</span><span class="trainer-star"></span></div>
+      <button class="trainer-cta" onclick="openModal('loginModal')">Get Started</button>
+    </div>
+  </div>
+
+</div>
     </div>
   </section>
 
