@@ -175,7 +175,7 @@ button { cursor: pointer; font-family: var(--font); }
 }
 
 .logo-name {
-  font-size: 11px;          /* 🔥 smaller text */
+  font-size: 15px;          /* 🔥 smaller text */
   font-weight: 700;
   letter-spacing: 3px;      /* premium spacing */
   color: var(--white);
@@ -650,7 +650,7 @@ footer { background: #050505; border-top: 1px solid var(--border); padding: 70px
     height: 50px;
   }
   .logo-name {
-    font-size: 10px;
+    font-size: 200px;
     letter-spacing: 2px;
   }
   .nav-links.open { display: flex; }
