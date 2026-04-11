@@ -2579,6 +2579,74 @@ async function deleteGymPlan(id) {
     showToast(res?.data?.message || "Delete failed", "error");
   }
 }
+function editPlan(id) {
+  const plan = (window.currentPlans || []).find(p => p.id === id);
+  if (!plan) return showToast("Plan not found", "error");
+
+  const features = Array.isArray(plan.features)
+    ? plan.features.join(", ")
+    : typeof plan.features === "string"
+      ? plan.features
+      : "";
+
+  openModal(
+    "✏️ Edit Plan",
+    `Editing: ${plan.name}`,
+    `
+    <div class="form-group">
+      <label>Name</label>
+      <input id="editPlanName" value="${escapeHtml(plan.name || "")}" />
+    </div>
+    <div class="form-group">
+      <label>Price (₹)</label>
+      <input id="editPlanPrice" type="number" value="${plan.price || ""}" />
+    </div>
+    <div class="form-group">
+      <label>Duration (Days)</label>
+      <input id="editPlanDuration" type="number" value="${plan.duration_days || ""}" />
+    </div>
+    <div class="form-group">
+      <label>Features (comma separated)</label>
+      <input id="editPlanFeatures" value="${escapeHtml(features)}" placeholder="Gym, Trainer, Diet" />
+    </div>
+    `,
+    async () => {
+      const name         = document.getElementById("editPlanName")?.value?.trim() || "";
+      const price        = document.getElementById("editPlanPrice")?.value || "";
+      const duration_days = document.getElementById("editPlanDuration")?.value || "";
+      const features     = document.getElementById("editPlanFeatures")?.value
+        .split(",").map(f => f.trim()).filter(Boolean);
+
+      if (!name)  return showToast("Name is required", "error");
+      if (!price) return showToast("Price is required", "error");
+
+      const res = await API.put(`/plans/${id}`, { name, price, duration_days, features });
+
+      if (res?.ok) {
+        showToast("Plan updated successfully ✅", "success");
+        closeModal();
+        loadAdminPlans();
+      } else {
+        showToast(res?.data?.message || "Failed to update plan", "error");
+      }
+    },
+    "Update Plan"
+  );
+}
+
+async function togglePlan(id, isActive) {
+  const action = isActive ? "deactivate" : "activate";
+  if (!confirm(`Are you sure you want to ${action} this plan?`)) return;
+
+  const res = await API.put(`/plans/${id}`, { is_active: !isActive });
+
+  if (res?.ok) {
+    showToast(`Plan ${isActive ? "deactivated" : "activated"} successfully`, "success");
+    loadAdminPlans();
+  } else {
+    showToast(res?.data?.message || `Failed to ${action} plan`, "error");
+  }
+}
 
 // ─────────────────────────────────────────────
 //  Init
