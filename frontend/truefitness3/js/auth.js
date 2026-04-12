@@ -275,6 +275,16 @@ async function handleSignup() {
 // ══════════════════════════════════════════════════
 //  LOGIN MODAL HANDLER
 // ══════════════════════════════════════════════════
+function togglePass(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
 
 async function handleLogin() {
   const phone = document.getElementById("loginPhone").value.trim();
