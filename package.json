@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/TheDeveloper69k/TrueFitness/issues"
   },
-  "homepage": "https://github.com/TheDeveloper69k/TrueFitness#readme"
+  "homepage": "https://github.com/TheDeveloper69k/TrueFitness#readme",
+  "dependencies": {
+    "node-zklib": "^1.3.0"
+  }
 }

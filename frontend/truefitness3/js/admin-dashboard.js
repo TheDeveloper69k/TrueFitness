@@ -1548,64 +1548,58 @@ async function sendNotification() {
   const targetType = document.getElementById("notifTargetType")?.value || "all";
   const title = document.getElementById("notifTitle")?.value?.trim() || "";
   const message = document.getElementById("notifMessage")?.value?.trim() || "";
-  const type = document.getElementById("notifType")?.value || "info";
   const scheduledAt = document.getElementById("notifScheduledAt")?.value || "";
-  const actionUrl = document.getElementById("notifActionUrl")?.value?.trim() || "";
 
   if (!title) return showToast("Title is required", "error");
   if (!message) return showToast("Message is required", "error");
 
-  const payload = { title, message, type, target_type: targetType };
+  let memberId = null;
 
   if (targetType === "user") {
     const resultBox = document.getElementById("notifMemberResult");
-    const memberId = resultBox?.dataset?.memberId;
+    memberId = resultBox?.dataset?.memberId;
     if (!memberId) return showToast("Please search and select a member first", "error");
-    payload.user_id = parseInt(memberId, 10);
   }
 
-  if (scheduledAt) payload.scheduled_at = new Date(scheduledAt).toISOString();
-  if (actionUrl) payload.action_url = actionUrl;
+  const scheduledIso = scheduledAt ? new Date(scheduledAt).toISOString() : undefined;
 
-  const res = await API.post("/notifications", payload);
+  // ── 1. Send WhatsApp ──────────────────────────────────────
+  let waRes;
+  if (targetType === "user") {
+    waRes = await API.post("/whatsapp/send", {
+      user_id: parseInt(memberId, 10),
+      title,
+      message,
+      ...(scheduledIso && { scheduled_at: scheduledIso }),
+    });
+  } else {
+    waRes = await API.post("/whatsapp/broadcast", {
+      title,
+      message,
+      ...(scheduledIso && { scheduled_at: scheduledIso }),
+    });
+  }
 
-  if (!res?.ok) {
-    showToast(res?.data?.message || "Failed to send notification", "error");
+  if (!waRes?.ok) {
+    showToast(waRes?.data?.message || "WhatsApp send failed ❌", "error");
     return;
   }
 
-  try {
-    if (targetType === "user") {
-      const waRes = await API.post("/whatsapp/send", {
-        user_id: payload.user_id,
-        title: payload.title,
-        message: payload.message,
-        scheduled_at: payload.scheduled_at || undefined,
-      });
+  // ── 2. Save to notifications (optional — don't block on failure) ──
+  const notifPayload = {
+    title, message,
+    type: document.getElementById("notifType")?.value || "info",
+    target_type: targetType,
+    ...(memberId && { user_id: parseInt(memberId, 10) }),
+    ...(scheduledIso && { scheduled_at: scheduledIso }),
+    ...(document.getElementById("notifActionUrl")?.value?.trim() && {
+      action_url: document.getElementById("notifActionUrl").value.trim()
+    }),
+  };
 
-      if (!waRes?.ok) {
-        showToast(waRes?.data?.message || "WhatsApp send failed", "error");
-        return;
-      }
-    } else {
-      const waRes = await API.post("/whatsapp/broadcast", {
-        title: payload.title,
-        message: payload.message,
-        scheduled_at: payload.scheduled_at || undefined,
-      });
+  await API.post("/notifications", notifPayload).catch(() => {});
 
-      if (!waRes?.ok) {
-        showToast(waRes?.data?.message || "WhatsApp broadcast failed", "error");
-        return;
-      }
-    }
-  } catch (err) {
-    console.error("WhatsApp send failed:", err);
-    showToast("WhatsApp send failed", "error");
-    return;
-  }
-
-  showToast("Notification + WhatsApp sent ✅", "success");
+  showToast("✅ WhatsApp message sent!", "success");
   closeModal();
   await loadNotifications();
 }
@@ -1719,12 +1713,35 @@ async function sendExpiryReminder() {
 }
 
 async function triggerExpiryAlertsNow() {
-  const res = await API.post("/whatsapp/trigger-expiry-alerts", {});
-  if (res?.ok) {
-    showToast(res?.data?.message || "Expiry alerts triggered", "success");
-  } else {
-    showToast(res?.data?.message || "Failed to trigger expiry alerts", "error");
-  }
+  // Ask admin which alert to trigger
+  openModal(
+    "⏰ Run Expiry Alert Job",
+    "Choose which expiry alert to trigger",
+    `
+    <div class="form-group">
+      <label>Days Before Expiry</label>
+      <select id="expiryAlertDays">
+        <option value="3">3 Days Before Expiry</option>
+        <option value="1">1 Day Before Expiry (Urgent)</option>
+      </select>
+    </div>
+    <p style="font-size:12px;color:#aaa;margin-top:8px">
+      This will send WhatsApp alerts to all members whose membership expires in the selected number of days.
+    </p>
+    `,
+    async () => {
+      const days = parseInt(document.getElementById("expiryAlertDays")?.value || "3");
+
+      const res = await API.post("/whatsapp/trigger-expiry-alerts", { days });
+
+      if (res?.ok) {
+        showToast(`✅ Expiry alerts sent — ${res.data?.data?.sent || 0} sent, ${res.data?.data?.failed || 0} failed`, "success");
+      } else {
+        showToast(res?.data?.message || "Failed to trigger expiry alerts", "error");
+      }
+    },
+    "Send Alerts"
+  );
 }
 
 async function openViewNotifModal(id) {

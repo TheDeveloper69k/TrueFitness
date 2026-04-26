@@ -33,7 +33,13 @@ const registerCronJobs = () => {
     console.log("[Cron] Membership expiry alerts job registered");
   } catch (err) {
     console.error("[Cron] Failed to register cron jobs:", err.message);
-    // Non-fatal — server continues even if cron fails to load
+  }
+
+  try {
+    require("./cron/biometricCron");
+    console.log("[Cron] Biometric sync job registered");
+  } catch (err) {
+    console.error("[Cron] Failed to register biometric cron:", err.message);
   }
 };
 
@@ -52,6 +58,13 @@ const startServer = async () => {
     console.log(`  URL         : http://localhost:${PORT}`);
     console.log(`  API Base    : http://localhost:${PORT}/api/v1`);
     console.log("─────────────────────────────────────────");
+    try {
+  require("./cron/birthdayWishJob");
+  console.log("[Cron] Birthday wish job registered");
+} catch (err) {
+  console.error("[Cron] Failed to register birthday job:", err.message);
+}
+    
   });
 
   // Set server timeouts
