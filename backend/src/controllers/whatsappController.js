@@ -597,7 +597,38 @@ const deleteNotification = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+const handleIncomingMessage = async (req, res) => {
+  try {
+    const { From, Body } = req.body;
+    const phone = From.replace("whatsapp:", "");
+    const message = (Body || "").trim().toLowerCase();
 
+    console.log(`[Webhook] Message from ${phone}: ${Body}`);
+
+    const client = getTwilioClient();
+
+    let replyText = "";
+
+    if (message === "hi" || message === "hello") {
+      replyText = `👋 Hello! Welcome to *True Fitness*!\n\nWe've added you to our updates list. You'll receive:\n🔔 Membership reminders\n🎂 Birthday wishes\n📢 Gym announcements\n\nSee you at the gym! 💪`;
+    } else if (message === "help") {
+      replyText = `🏋️ *True Fitness Support*\n\nFor help, please visit the gym or call us directly.\n\nThank you! 💪`;
+    } else {
+      replyText = `Thanks for messaging *True Fitness*! 💪\n\nWe'll get back to you soon. For urgent queries, please visit the gym directly.`;
+    }
+
+    await client.messages.create({
+      from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
+      to: From,
+      body: replyText,
+    });
+
+    res.status(200).send("OK");
+  } catch (err) {
+    console.error("[Webhook] Error:", err.message);
+    res.status(500).send("Error");
+  }
+};
 const triggerExpiryAlerts = async (req, res) => {
   try {
     const days = parseInt(req.body.days);
@@ -621,5 +652,5 @@ const triggerExpiryAlerts = async (req, res) => {
 module.exports = {
   sendToUser, sendBulk, broadcast, retryFailed,
   getAllNotifications, getMyNotifications, getStats,
-  deleteNotification, sendMembershipExpiryAlerts, triggerExpiryAlerts,
+  deleteNotification, sendMembershipExpiryAlerts, triggerExpiryAlerts,handleIncomingMessage,
 };

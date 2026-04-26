@@ -52,6 +52,8 @@ router.post("/send-bulk", protect, adminOnly, sendLimiter, sendBulk);
 router.post("/broadcast", protect, adminOnly, broadcastLimiter, broadcast);
 router.post("/trigger-expiry-alerts", protect, adminOnly, triggerExpiryAlerts);
 router.post("/:id/retry", protect, adminOnly, sendLimiter, retryFailed);
+router.post("/webhook", handleIncomingMessage);
 router.delete("/:id", protect, adminOnly, deleteNotification);
+
 
 module.exports = router;
