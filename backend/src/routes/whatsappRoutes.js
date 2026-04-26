@@ -13,7 +13,8 @@ const {
   getMyNotifications,
   getStats,
   deleteNotification,
-  triggerExpiryAlerts,    // ← NEW: manually trigger expiry alerts
+  triggerExpiryAlerts,  
+  handleIncomingMessage,  
 } = require("../controllers/whatsappController");
 
 const { protect, adminOnly } = require("../middlewares/authMiddleware");
@@ -51,8 +52,8 @@ router.post("/send", protect, adminOnly, sendLimiter, sendToUser);
 router.post("/send-bulk", protect, adminOnly, sendLimiter, sendBulk);
 router.post("/broadcast", protect, adminOnly, broadcastLimiter, broadcast);
 router.post("/trigger-expiry-alerts", protect, adminOnly, triggerExpiryAlerts);
-router.post("/:id/retry", protect, adminOnly, sendLimiter, retryFailed);
 router.post("/webhook", handleIncomingMessage);
+router.post("/:id/retry", protect, adminOnly, sendLimiter, retryFailed);
 router.delete("/:id", protect, adminOnly, deleteNotification);
 
 
