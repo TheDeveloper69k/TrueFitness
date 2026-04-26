@@ -9,7 +9,10 @@
   <meta name="description"
     content="True Fitness — A fully equipped unisex gym in Sector 115, Mohali. Expert certified trainers, personalized weight loss, muscle building programs, diet plans and more. Call: 9877507810" />
   <title>True Fitness — Transform Your Body. Transform Your Life.</title>
-  <link rel="icon" type="image/png" href="../Assets/Gymlogo.webp">
+  <link rel="icon" type="image/x-icon" href="Assets/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="Assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="Assets/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="Assets/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
@@ -182,17 +185,19 @@
     }
 
     .trainer-img {
-      height: 220px;
+      height: 380px;
       position: relative;
       overflow: hidden
+      
     }
 
     .trainer-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s
-    }
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transition: transform 0.3s
+}
 
     .trainer-card:hover .trainer-img img {
       transform: scale(1.05)
@@ -211,9 +216,10 @@
     }
 
     .trainer-tag h4 {
-      font-size: 16px;
-      font-weight: 700
-    }
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--red)
+}
 
     .trainer-tag p {
       font-size: 12px;
@@ -699,23 +705,40 @@
   <section class="section trainers" id="trainers">
     <div class="container">
       <h2 class="section-title">Meet Our Gym Trainer</h2>
-      <p class="section-desc">World-class certified trainers dedicated to your transformation journey.</p>
-      <div class="trainers-grid">
-        <div class="trainer-card">
-          <div class="trainer-img">
-            <img src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=400&q=80" alt="Manoj" />
-            <div class="trainer-overlay"></div>
-            <div class="trainer-tag">
-              <h4>Manoj</h4>
-              <p>CrossFit, HIIT</p>
-            </div>
-          </div>
-          <div class="trainer-body">
-            <div class="trainer-meta"><span>45 members</span><span class="trainer-star"></span></div>
-            <button class="trainer-cta" onclick="openModal('loginModal')">Get Started</button>
-          </div>
-        </div>
+      <p class="section-desc">certified trainers dedicated to your transformation journey.</p>
+     <div class="trainers-grid">
+
+  <div class="trainer-card">
+    <div class="trainer-img">
+     <img src="../Assets/manoj.webp" alt="Manoj" style="object-position: center 20%;" />
+      <div class="trainer-overlay"></div>
+      <div class="trainer-tag">
+        <h4>Manoj</h4>
+        <p></p>
       </div>
+    </div>
+    <div class="trainer-body">
+      <div class="trainer-meta"><span>45 members</span><span class="trainer-star"></span></div>
+      <button class="trainer-cta" onclick="openModal('loginModal')">Get Started</button>
+    </div>
+  </div>
+
+  <div class="trainer-card">
+    <div class="trainer-img">
+      <img src="../Assets/gaurav.webp" alt="Gaurav" style="object-position: center 15%;" />
+      <div class="trainer-overlay"></div>
+      <div class="trainer-tag">
+        <h4>Gaurav</h4>
+        <p></p>
+      </div>
+    </div>
+    <div class="trainer-body">
+      <div class="trainer-meta"><span>30 members</span><span class="trainer-star"></span></div>
+      <button class="trainer-cta" onclick="openModal('loginModal')">Get Started</button>
+    </div>
+  </div>
+
+</div>
     </div>
   </section>
 
@@ -763,6 +786,7 @@
             </div>
           </div>
         </div>
+        <div></div>
         <div class="test-card">
           <div class="test-stars">★★★★★</div>
           <p class="test-text">"World-class facility at a very reasonable price. The VIP membership is worth every
@@ -938,7 +962,23 @@
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" id="loginPass" placeholder="Enter your password" />
+          <div style="position:relative">
+            <input type="password" id="loginPass" placeholder="Enter your password"
+              style="padding-right:44px;width:100%" />
+            <button type="button" onclick="togglePass('loginPass', this)" style="
+      position:absolute;
+      right:12px;
+      top:50%;
+      transform:translateY(-50%);
+      background:none;
+      border:none;
+      cursor:pointer;
+      color:var(--muted);
+      font-size:18px;
+      padding:0;
+      line-height:1;
+    ">👁</button>
+          </div>
         </div>
         <div id="loginErr" style="color:#f87171;font-size:12px;margin-bottom:10px;display:none"></div>
         <button class="modal-submit" onclick="handleLogin()">Login</button>
