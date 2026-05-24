@@ -150,6 +150,9 @@ function openModal(title, desc, bodyHtml, onConfirm, confirmText = "Continue") {
 function closeModal() {
   const overlay = document.getElementById("modalOverlay");
   if (overlay) overlay.style.display = "none";
+
+  const bodyEl = document.getElementById("modalBody");
+  if (bodyEl) bodyEl.innerHTML = "";
 }
 
 window.onclick = function (e) {
@@ -354,17 +357,17 @@ function openAddMemberModal() {
     "👤 Add New Member",
     "Register a new user account",
     `
-    <div class="form-group"><label>Full Name</label><input id="mName" type="text" placeholder="John Doe"/></div>
-    <div class="form-group"><label>Phone</label><input id="mPhone" type="tel" placeholder="9876543210" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"/></div>
-    <div class="form-group"><label>Email (optional)</label><input id="mEmail" type="email" placeholder="john@example.com"/></div>
+    <div class="form-group"><label>Full Name</label><input id="mName" type="text" autocomplete="off" placeholder="John Doe"/></div>
+    <div class="form-group"><label>Phone</label><input id="mPhone" type="tel" autocomplete="off" placeholder="9876543210" maxlength="10" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,10)"/></div>
+    <div class="form-group"><label>Email (optional)</label><input id="mEmail" type="email" autocomplete="off" placeholder="john@example.com"/></div>
     <div class="form-group">
-  <label>Password</label>
-  <div style="position:relative">
-    <input id="mPass" type="password" placeholder="Password" style="padding-right:40px;width:100%"/>
-    <span onclick="const i=document.getElementById('mPass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" 
-      style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none">👁</span>
-  </div>
-</div>
+      <label>Password</label>
+      <div style="position:relative">
+        <input id="mPass" type="password" autocomplete="new-password" placeholder="Password" style="padding-right:40px;width:100%"/>
+        <span onclick="const i=document.getElementById('mPass');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" 
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none">👁</span>
+      </div>
+    </div>
     `,
     addMember,
     "Create User"
@@ -380,7 +383,7 @@ async function addMember() {
   if (!name) return showToast("Full name is required", "error");
   if (name.length < 2) return showToast("Please enter a valid full name", "error");
   if (!phone) return showToast("Phone is required", "error");
- if (!/^[0-9]{10}$/.test(phone)) return showToast("Phone number must be exactly 10 digits", "error");
+  if (!/^[0-9]{10}$/.test(phone)) return showToast("Phone number must be exactly 10 digits", "error");
   if (!password) return showToast("Password is required", "error");
   if (password.length < 6) return showToast("Password must be at least 6 characters", "error");
 
@@ -399,14 +402,13 @@ async function addMember() {
     await loadMembers();
 
     if (userId) {
-      setTimeout(() => openAssignMembershipModal(userId, name), 300);
+      setTimeout(() => openAssignMembershipModal(userId, name, true), 300); // ✅ true = delete if skipped
     }
     return;
   }
 
   showToast(res?.data?.message || "Failed to create user", "error");
 }
-
 // ─────────────────────────────────────────────
 //  ADMIN PLAN MANAGEMENT
 // ─────────────────────────────────────────────
@@ -589,8 +591,33 @@ function handleRenewPlanChange() {
 //  Assign Membership modal
 // ─────────────────────────────────────────────
 
-async function openAssignMembershipModal(userId, name) {
+async function openAssignMembershipModal(userId, name, deletable = false) {
   await ensurePlansLoaded();
+
+  // ✅ Delete user if modal is skipped/closed without assigning
+  const handleSkip = async () => {
+    if (deletable) {
+      // ✅ Delete the USER, not just the membership
+      await API.delete(`/users/${userId}`);
+      await loadDashboardStats();
+      await loadMembers();
+      showToast("Member registration cancelled", "info");
+    }
+    window.onclick = function (e) {
+      const overlay = document.getElementById("modalOverlay");
+      if (e.target === overlay) closeModal();
+    };
+    closeModal();
+  };
+
+  // ✅ Override window.onclick to use handleSkip
+  window.onclick = async function (e) {
+    const overlay = document.getElementById("modalOverlay");
+    if (e.target === overlay) await handleSkip();
+  };
+
+  // ✅ Make handleSkip accessible to cancel button inside HTML
+  window._currentSkipHandler = handleSkip;
 
   openModal(
     "💎 Assign Membership",
@@ -634,15 +661,21 @@ async function openAssignMembershipModal(userId, name) {
       <label>Start Date</label>
       <input id="startDate" type="date" value="${new Date().toISOString().split("T")[0]}"/>
     </div>
+
+    <!-- ✅ Cancel button deletes user if skipped -->
+    <div style="margin-top:8px">
+      <button class="tc-btn" style="width:100%;color:#f87171;border-color:rgba(232,40,26,.35)"
+        onclick="window._currentSkipHandler()">✕ Cancel & Discard Member</button>
+    </div>
     `,
-    () => assignMembership(userId),
+    () => assignMembership(userId, true), // ✅ pass true = assigned successfully
     "Continue"
   );
 
   fillPlanDropdown("planName");
 }
 
-async function assignMembership(userId) {
+async function assignMembership(userId, assigned = false) {
   const monthly_plan = document.getElementById("planName")?.value?.trim() || "";
   const discount = document.getElementById("discount")?.value?.trim() || "0";
   const date_of_birth = document.getElementById("dob")?.value || null;
@@ -665,6 +698,14 @@ async function assignMembership(userId) {
 
   if (res?.ok) {
     showToast("Membership added successfully", "success");
+
+    // ✅ Restore default window.onclick after successful assign
+    window.onclick = function (e) {
+      const overlay = document.getElementById("modalOverlay");
+      if (e.target === overlay) closeModal();
+    };
+    window._currentSkipHandler = null;
+
     closeModal();
     await loadDashboardStats();
     await loadMembers();
@@ -672,7 +713,6 @@ async function assignMembership(userId) {
     showToast(res?.data?.message || "Failed to assign membership", "error");
   }
 }
-
 // ─────────────────────────────────────────────
 //  Status modal
 // ─────────────────────────────────────────────

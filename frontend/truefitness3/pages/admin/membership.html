@@ -703,7 +703,7 @@
       Plan change takes effect immediately. Member will be notified via WhatsApp.
     </div>
     <div class="modal-footer">
-      <button class="modal-cancel" onclick="closeModal('changePlanModal')">Cancel</button>
+      <button type="button" class="modal-cancel" onclick="window._currentSkipHandler ? window._currentSkipHandler() : closeModal()">Cancel</button>
       <button class="modal-confirm" onclick="confirmChange()">Confirm Change</button>
     </div>
   </div>
