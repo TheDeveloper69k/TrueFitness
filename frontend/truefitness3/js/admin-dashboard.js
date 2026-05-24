@@ -393,16 +393,15 @@ async function addMember() {
   const res = await API.post("/auth/register", payload);
 
   if (res?.ok) {
-    showToast("User created successfully", "success");
-
     const userId = res?.data?.data?.id;
     closeModal();
 
-    await loadDashboardStats();
-    await loadMembers();
+    // ❌ Removed loadDashboardStats() and loadMembers() here
+    // Table will refresh after step 2 completes (assignMembership) 
+    // or after cancel (handleSkip) — never in between
 
     if (userId) {
-      setTimeout(() => openAssignMembershipModal(userId, name, true), 300); // ✅ true = delete if skipped
+      setTimeout(() => openAssignMembershipModal(userId, name, true), 300);
     }
     return;
   }
@@ -595,26 +594,26 @@ async function openAssignMembershipModal(userId, name, deletable = false) {
   await ensurePlansLoaded();
 
   // ✅ Delete user if modal is skipped/closed without assigning
-  const handleSkip = async () => {
-    if (deletable) {
-      // ✅ Delete the USER, not just the membership
-      await API.delete(`/memberships/user/${userId}`);
-      await loadDashboardStats();
-      await loadMembers();
-      showToast("Member registration cancelled", "info");
-    }
+ const handleSkip = async () => {
+  if (deletable) {
+    await API.delete(`/memberships/user/${userId}`);
+    showToast("Member registration cancelled", "info");
+    closeModal();
+    // Restore default onclick
     window.onclick = function (e) {
       const overlay = document.getElementById("modalOverlay");
       if (e.target === overlay) closeModal();
     };
+    await loadDashboardStats();
+    await loadMembers();  // reload AFTER delete completes
+  } else {
     closeModal();
-  };
-
-  // ✅ Override window.onclick to use handleSkip
-  window.onclick = async function (e) {
-    const overlay = document.getElementById("modalOverlay");
-    if (e.target === overlay) await handleSkip();
-  };
+    window.onclick = function (e) {
+      const overlay = document.getElementById("modalOverlay");
+      if (e.target === overlay) closeModal();
+    };
+  }
+};
 
   // ✅ Make handleSkip accessible to cancel button inside HTML
   window._currentSkipHandler = handleSkip;
