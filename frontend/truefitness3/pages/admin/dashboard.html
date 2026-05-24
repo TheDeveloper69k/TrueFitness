@@ -1534,7 +1534,7 @@
       <div class="modal-desc" id="modalDesc">Modal description</div>
       <div id="modalBody"></div>
       <div class="modal-btns">
-        <button type="button" class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button type="button" class="modal-cancel" onclick="window._currentSkipHandler ? window._currentSkipHandler() : closeModal()">Cancel</button>
         <button type="button" class="modal-confirm" id="modalConfirmBtn">Continue</button>
       </div>
     </div>
