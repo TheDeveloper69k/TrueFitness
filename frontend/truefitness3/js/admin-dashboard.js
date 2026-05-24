@@ -598,7 +598,7 @@ async function openAssignMembershipModal(userId, name, deletable = false) {
   const handleSkip = async () => {
     if (deletable) {
       // ✅ Delete the USER, not just the membership
-      await API.delete(`/users/${userId}`);
+      await API.delete(`/memberships/user/${userId}`);
       await loadDashboardStats();
       await loadMembers();
       showToast("Member registration cancelled", "info");
