@@ -26,21 +26,21 @@ const loginLimiter = rateLimit({
 
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 10,
+  max: 50,
   message: { success: false, message: "Too many registration attempts. Try again after 1 hour." },
 });
 
 const otpSendLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  keyGenerator: (req) => req.body?.phone || ipKeyGenerator(req), // ← fixed IPv6
+  keyGenerator: (req) => req.body?.phone || ipKeyGenerator(req),
   message: { success: false, message: "Too many OTP requests. Try again after 15 minutes." },
 });
 
 const otpVerifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
-  keyGenerator: (req) => req.body?.phone || ipKeyGenerator(req), // ← fixed IPv6
+  keyGenerator: (req) => req.body?.phone || ipKeyGenerator(req),
   message: { success: false, message: "Too many verification attempts. Try again after 15 minutes." },
 });
 
@@ -50,8 +50,17 @@ const refreshLimiter = rateLimit({
   message: { success: false, message: "Too many token refresh attempts. Try again later." },
 });
 
+// ✅ Skip rate limit if admin token is present
+const adminRegisterBypass = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return next();
+  }
+  return registerLimiter(req, res, next);
+};
+
 // Public Routes
-router.post("/register", registerLimiter, registerUser);
+router.post("/register", adminRegisterBypass, registerUser); // ✅ bypass for admin
 router.post("/login", loginLimiter, loginUser);
 router.post("/refresh", refreshLimiter, refreshToken);
 
