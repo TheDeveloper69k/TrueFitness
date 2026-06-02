@@ -320,6 +320,7 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
       const phone = m.phone || "-";
       const safePhone = highlightMatch(phone, hlQuery);
       const dob = formatDate(m.date_of_birth);
+      const joiningDate = formatDate(m.created_at);
       const plan = escapeHtml(m.monthly_plan || "-");
       const amount = Number(m.final_amount ?? 0);
 
@@ -332,6 +333,7 @@ function renderMemberTable(tbodyId, rows, filter = "all") {
         <td>${safeName}</td>
         <td>${safePhone}</td>
         <td>${dob}</td>
+        <td>${joiningDate}</td>
         <td>${plan}</td>
         <td>₹${amount.toLocaleString("en-IN")}</td>
         <td><span class="pill pill-${statusClass}">${capitalize(m.status || "—")}</span></td>
