@@ -662,7 +662,15 @@ async function openAssignMembershipModal(userId, name, deletable = false) {
       <label>Start Date</label>
       <input id="startDate" type="date" value="${new Date().toISOString().split("T")[0]}"/>
     </div>
-
+    <div class="form-group">
+  <label>Payment Method</label>
+  <select id="paymentMethod">
+    <option value="cash">Cash</option>
+    <option value="upi">UPI</option>
+    <option value="card">Card</option>
+    <option value="bank_transfer">Bank Transfer</option>
+  </select>
+</div>
     <!-- ✅ Cancel button deletes user if skipped -->
     <div style="margin-top:8px">
       <button class="tc-btn" style="width:100%;color:#f87171;border-color:rgba(232,40,26,.35)"
@@ -682,18 +690,21 @@ async function assignMembership(userId, assigned = false) {
   const date_of_birth = document.getElementById("dob")?.value || null;
   const status = document.getElementById("memberStatus")?.value || "active";
   const start_date = document.getElementById("startDate")?.value || "";
+  const payment_method =
+  document.getElementById("paymentMethod").value;
 
   if (!monthly_plan) return showToast("Plan name is required", "error");
   if (!start_date) return showToast("Start date is required", "error");
 
   const payload = {
-    user_id: parseInt(userId, 10),
-    monthly_plan,
-    discount: parseFloat(discount || 0),
-    date_of_birth,
-    status,
-    start_date,
-  };
+  user_id: parseInt(userId, 10),
+  monthly_plan,
+  discount: parseFloat(discount || 0),
+  date_of_birth,
+  status,
+  start_date,
+  payment_method,
+};
 
   const res = await API.post("/memberships/assign", payload);
 
