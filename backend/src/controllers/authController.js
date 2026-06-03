@@ -18,7 +18,6 @@ const isValidEmail = (email) => {
   if (!email) return true;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
-
 const isValidPhone = (phone) => /^[0-9]{10,15}$/.test(phone);
 
 const isStrongPassword = (password) => {

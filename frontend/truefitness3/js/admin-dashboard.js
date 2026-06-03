@@ -596,30 +596,40 @@ function handleRenewPlanChange() {
 async function openAssignMembershipModal(userId, name, deletable = false) {
   await ensurePlansLoaded();
 
-  // ✅ Delete user if modal is skipped/closed without assigning
- const handleSkip = async () => {
-  if (deletable) {
-    await API.delete(`/memberships/user/${userId}`);
-    showToast("Member registration cancelled", "info");
-    closeModal();
-    // Restore default onclick
+  const restoreDefaultOverlayClick = () => {
     window.onclick = function (e) {
       const overlay = document.getElementById("modalOverlay");
       if (e.target === overlay) closeModal();
     };
-    await loadDashboardStats();
-    await loadMembers();  // reload AFTER delete completes
-  } else {
-    closeModal();
-    window.onclick = function (e) {
-      const overlay = document.getElementById("modalOverlay");
-      if (e.target === overlay) closeModal();
-    };
-  }
-};
+  };
 
-  // ✅ Make handleSkip accessible to cancel button inside HTML
+  const handleSkip = async () => {
+    if (deletable) {
+      await API.delete(`/memberships/user/${userId}`);
+      showToast("Member registration cancelled", "info");
+      closeModal();
+
+      window._currentSkipHandler = null;
+      restoreDefaultOverlayClick();
+
+      await loadDashboardStats();
+      await loadMembers();
+    } else {
+      closeModal();
+
+      window._currentSkipHandler = null;
+      restoreDefaultOverlayClick();
+    }
+  };
+
   window._currentSkipHandler = handleSkip;
+
+  window.onclick = function (e) {
+    const overlay = document.getElementById("modalOverlay");
+    if (e.target === overlay && window._currentSkipHandler) {
+      window._currentSkipHandler();
+    }
+  };
 
   openModal(
     "💎 Assign Membership",
@@ -663,22 +673,23 @@ async function openAssignMembershipModal(userId, name, deletable = false) {
       <label>Start Date</label>
       <input id="startDate" type="date" value="${new Date().toISOString().split("T")[0]}"/>
     </div>
+
     <div class="form-group">
-  <label>Payment Method</label>
-  <select id="paymentMethod">
-    <option value="cash">Cash</option>
-    <option value="upi">UPI</option>
-    <option value="card">Card</option>
-    <option value="bank_transfer">Bank Transfer</option>
-  </select>
-</div>
-    <!-- ✅ Cancel button deletes user if skipped -->
+      <label>Payment Method</label>
+      <select id="paymentMethod">
+        <option value="cash">Cash</option>
+        <option value="upi">UPI</option>
+        <option value="card">Card</option>
+        <option value="bank_transfer">Bank Transfer</option>
+      </select>
+    </div>
+
     <div style="margin-top:8px">
       <button class="tc-btn" style="width:100%;color:#f87171;border-color:rgba(232,40,26,.35)"
         onclick="window._currentSkipHandler()">✕ Cancel & Discard Member</button>
     </div>
     `,
-    () => assignMembership(userId, true), // ✅ pass true = assigned successfully
+    () => assignMembership(userId, true),
     "Continue"
   );
 
