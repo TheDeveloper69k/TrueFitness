@@ -10,12 +10,10 @@ const {
   refreshToken,
   logoutUser,
   getMe,
-  verifyRegisterOTP,
-  sendForgotPasswordOTP,
   resetPassword,
 } = require("../controllers/authController");
 
-const { sendOTP } = require("../controllers/otpController");
+
 const { protect } = require("../middlewares/authMiddleware");
 
 const loginLimiter = rateLimit({
@@ -30,19 +28,7 @@ const registerLimiter = rateLimit({
   message: { success: false, message: "Too many registration attempts. Try again after 1 hour." },
 });
 
-const otpSendLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  keyGenerator: (req) => req.body?.phone || ipKeyGenerator(req),
-  message: { success: false, message: "Too many OTP requests. Try again after 15 minutes." },
-});
 
-const otpVerifyLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  keyGenerator: (req) => req.body?.phone || ipKeyGenerator(req),
-  message: { success: false, message: "Too many verification attempts. Try again after 15 minutes." },
-});
 
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -64,11 +50,8 @@ router.post("/register", adminRegisterBypass, registerUser); // ✅ bypass for a
 router.post("/login", loginLimiter, loginUser);
 router.post("/refresh", refreshLimiter, refreshToken);
 
-// OTP Routes
-router.post("/otp/send-register", otpSendLimiter, sendOTP);
-router.post("/otp/verify-register", otpVerifyLimiter, verifyRegisterOTP);
-router.post("/otp/forgot-password", otpSendLimiter, sendForgotPasswordOTP);
-router.post("/otp/reset-password", otpVerifyLimiter, resetPassword);
+
+
 
 // Protected Routes
 router.get("/me", protect, getMe);
