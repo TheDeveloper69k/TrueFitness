@@ -137,12 +137,14 @@ function openModal(title, desc, bodyHtml, onConfirm, confirmText = "Continue") {
   newBtn.onclick = async () => {
     try {
       newBtn.disabled = true;
+       newBtn.textContent = "Please wait...";
       await onConfirm?.();
     } catch (err) {
       console.error("Modal confirm error:", err);
       showToast("Something went wrong", "error");
     } finally {
       newBtn.disabled = false;
+      newBtn.textContent = confirmText;
     }
   };
 }
