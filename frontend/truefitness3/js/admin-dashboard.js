@@ -377,6 +377,7 @@ function openAddMemberModal() {
 }
 
 async function addMember() {
+  console.log("ADD MEMBER CLICKED");
   const name = document.getElementById("mName")?.value?.trim() || "";
   const phone = document.getElementById("mPhone")?.value?.trim() || "";
   const email = document.getElementById("mEmail")?.value?.trim() || "";
