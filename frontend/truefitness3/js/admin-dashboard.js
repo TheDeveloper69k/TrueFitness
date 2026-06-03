@@ -382,12 +382,20 @@ async function addMember() {
   const email = document.getElementById("mEmail")?.value?.trim() || "";
   const password = document.getElementById("mPass")?.value?.trim() || "";
 
+  // Validation (same as before)
   if (!name) return showToast("Full name is required", "error");
   if (name.length < 2) return showToast("Please enter a valid full name", "error");
   if (!phone) return showToast("Phone is required", "error");
   if (!/^[0-9]{10}$/.test(phone)) return showToast("Phone number must be exactly 10 digits", "error");
   if (!password) return showToast("Password is required", "error");
   if (password.length < 6) return showToast("Password must be at least 6 characters", "error");
+
+  // ✅ Show loading on button
+  const btn = document.getElementById("modalConfirmBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Creating...";
+  }
 
   const payload = { name, phone, password };
   if (email) payload.email = email;
@@ -397,15 +405,16 @@ async function addMember() {
   if (res?.ok) {
     const userId = res?.data?.data?.id;
     closeModal();
-
-    // ❌ Removed loadDashboardStats() and loadMembers() here
-    // Table will refresh after step 2 completes (assignMembership) 
-    // or after cancel (handleSkip) — never in between
-
     if (userId) {
       setTimeout(() => openAssignMembershipModal(userId, name, true), 300);
     }
     return;
+  }
+
+  // ✅ Restore button on failure
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = "Create User";
   }
 
   showToast(res?.data?.message || "Failed to create user", "error");
